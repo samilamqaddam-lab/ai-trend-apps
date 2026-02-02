@@ -361,9 +361,9 @@
             </div>
             <div class="stat-card">
                 <div class="stat-value">
-                    <span class="live-badge"><span class="live-dot"></span> LIVE</span>
+                    <span class="live-badge"><span class="live-dot"></span> SNAPSHOT</span>
                 </div>
-                <div class="stat-label">Data Updates</div>
+                <div class="stat-label">Tow Center / CJR (Mar 2025)</div>
             </div>
         </div>
         
@@ -377,9 +377,9 @@
             </div>
             
             <div class="card">
-                <h2>🤖 Chat Model Accuracy</h2>
+                <h2>🏆 Best Model (on this benchmark)</h2>
                 <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
-                    General hallucination rates in conversational AI responses.
+                    Lowest error rate for the Tow Center / CJR citation task snapshot.
                 </p>
                 <div class="model-list" id="chatModels"></div>
             </div>
@@ -425,28 +425,28 @@
         
         <footer>
             <p>Built with ❤️ inspired by trending AI discussions on X/Twitter</p>
-            <p>⚠️ Search model data from X/Twitter reports • Chat model data is illustrative</p>
-            <p><a href="https://github.com/samilamqaddam-lab/ai-trend-apps/tree/main/2026-02-02-hallucination-dashboard">View Source</a></p>
+            <p>Source: Tow Center / Columbia Journalism Review (Mar 6, 2025) — citation task snapshot (old, but useful as a failure mode)</p>
+            <p>
+                <a href="https://www.cjr.org/tow_center/we-compared-eight-ai-search-engines-theyre-all-bad-at-citing-news.php">CJR article</a>
+                • <a href="https://github.com/TowCenter/genSearch-Part2/tree/main">dataset</a>
+                • <a href="https://github.com/samilamqaddam-lab/ai-trend-apps/tree/main/2026-02-02-hallucination-dashboard">view source</a>
+            </p>
         </footer>
     </div>
     
     <script>
         // Model data based on reported benchmarks
+        // Source: Tow Center / Columbia Journalism Review (Mar 6, 2025)
+        // Task: citation/source identification from news excerpts (headline, publisher, date, URL).
+        // IMPORTANT: these are NOT universal "hallucination rates" across all tasks.
         const searchModels = [
-            { name: "Perplexity Pro", rate: 12, icon: "🟢" },
-            { name: "Claude Search", rate: 19, icon: "🔵" },
-            { name: "Gemini Search", rate: 28, icon: "🟡" },
-            { name: "ChatGPT Search", rate: 67, icon: "🟠" },
-            { name: "Grok-3 Search", rate: 94, icon: "🔴" },
+            { name: "Perplexity", rate: 37, icon: "🟢" },
+            { name: "ChatGPT Search", rate: 67, icon: "🟠" }, // 134/200 incorrect in the report → 67%
+            { name: "Grok-3 (beta)", rate: 94, icon: "🔴" },
         ];
         
-        const chatModels = [
-            { name: "Claude Opus 4.5", rate: 8, icon: "🔵" },
-            { name: "GPT-5.2 Turbo", rate: 15, icon: "🟢" },
-            { name: "Gemini Ultra 2", rate: 18, icon: "🟡" },
-            { name: "Llama 4 405B", rate: 22, icon: "🦙" },
-            { name: "Mistral Large 3", rate: 25, icon: "🌬️" },
-        ];
+        // Chat numbers were illustrative in the first version; removed to avoid confusion.
+        const chatModels = [];
         
         // Hallucination indicator patterns
         const patterns = {
@@ -467,6 +467,34 @@
         
         function renderModels(containerId, models) {
             const container = document.getElementById(containerId);
+
+            // Special case: "chatModels" panel is used as the BEST model callout.
+            if (containerId === 'chatModels') {
+                const best = [...searchModels].sort((a,b) => a.rate - b.rate)[0];
+                const scoreClass = getScoreClass(best.rate);
+                container.innerHTML = `
+                    <div class="model-item">
+                        <div class="model-header">
+                            <span class="model-name">${best.icon} ${best.name}</span>
+                            <span class="model-score score-${scoreClass}">${best.rate}%</span>
+                        </div>
+                        <div class="bar-container">
+                            <div class="bar bar-${scoreClass}" style="width: 0%;" data-width="${best.rate}"></div>
+                        </div>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.75rem;">
+                            Based on a March 2025 citation task (not a universal hallucination leaderboard).
+                        </p>
+                    </div>
+                `;
+
+                setTimeout(() => {
+                    container.querySelectorAll('.bar').forEach(bar => {
+                        bar.style.width = bar.dataset.width + '%';
+                    });
+                }, 100);
+                return;
+            }
+
             container.innerHTML = models.map(model => {
                 const scoreClass = getScoreClass(model.rate);
                 return `
@@ -481,7 +509,7 @@
                     </div>
                 `;
             }).join('');
-            
+
             // Animate bars
             setTimeout(() => {
                 container.querySelectorAll('.bar').forEach(bar => {
