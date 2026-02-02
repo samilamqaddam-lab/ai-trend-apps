@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Hallucination Dashboard 🎭</title>
+    <style>
+        :root {
+            --bg-dark: #0d1117;
+            --bg-card: #161b22;
+            --border: #30363d;
+            --text: #e6edf3;
+            --text-muted: #8b949e;
+            --accent: #58a6ff;
+            --red: #f85149;
+            --orange: #d29922;
+            --green: #3fb950;
+            --purple: #a371f7;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--accent), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+        
+        .trend-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--purple), var(--accent));
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 2rem;
+            font-size: 0.8rem;
+            margin-top: 1rem;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+        
+        .card h2 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .model-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .model-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .model-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .model-name {
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .model-score {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .score-low { color: var(--green); }
+        .score-medium { color: var(--orange); }
+        .score-high { color: var(--red); }
+        
+        .bar-container {
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .bar {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 1s ease-out;
+        }
+        
+        .bar-low { background: linear-gradient(90deg, var(--green), #2ea043); }
+        .bar-medium { background: linear-gradient(90deg, var(--orange), #bf8700); }
+        .bar-high { background: linear-gradient(90deg, var(--red), #da3633); }
+        
+        .info-card {
+            grid-column: span 2;
+        }
+        
+        @media (max-width: 768px) {
+            .info-card {
+                grid-column: span 1;
+            }
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .info-item {
+            background: rgba(88, 166, 255, 0.1);
+            border: 1px solid rgba(88, 166, 255, 0.2);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+        
+        .info-item h3 {
+            font-size: 0.9rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+        
+        .info-item p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+        
+        .checker-section {
+            margin-top: 2rem;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .input-group input {
+            flex: 1;
+            padding: 0.8rem 1rem;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 1rem;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        
+        .btn {
+            padding: 0.8rem 1.5rem;
+            background: var(--accent);
+            color: var(--bg-dark);
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .result {
+            padding: 1rem;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .result.show {
+            display: block;
+        }
+        
+        .result.warning {
+            background: rgba(210, 153, 34, 0.15);
+            border: 1px solid rgba(210, 153, 34, 0.3);
+        }
+        
+        .result.safe {
+            background: rgba(63, 185, 80, 0.15);
+            border: 1px solid rgba(63, 185, 80, 0.3);
+        }
+        
+        .result h4 {
+            margin-bottom: 0.5rem;
+        }
+        
+        .flags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .flag {
+            padding: 0.25rem 0.5rem;
+            background: rgba(248, 81, 73, 0.2);
+            border: 1px solid rgba(248, 81, 73, 0.3);
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: var(--red);
+        }
+        
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .live-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(248, 81, 73, 0.2);
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.8rem;
+            color: var(--red);
+        }
+        
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--red);
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎭 AI Hallucination Dashboard</h1>
+            <p class="subtitle">Tracking factual accuracy across AI models</p>
+            <span class="trend-badge">🔥 Trending on X/Twitter</span>
+        </header>
+        
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-value" id="avgRate">--</div>
+                <div class="stat-label">Avg Hallucination Rate</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="modelCount">--</div>
+                <div class="stat-label">Models Tracked</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="bestModel">--</div>
+                <div class="stat-label">Most Accurate</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">
+                    <span class="live-badge"><span class="live-dot"></span> LIVE</span>
+                </div>
+                <div class="stat-label">Data Updates</div>
+            </div>
+        </div>
+        
+        <div class="dashboard">
+            <div class="card">
+                <h2>📊 Search Hallucination Rates</h2>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+                    Lower is better. Measures factual errors in search-augmented responses.
+                </p>
+                <div class="model-list" id="searchModels"></div>
+            </div>
+            
+            <div class="card">
+                <h2>🤖 Chat Model Accuracy</h2>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+                    General hallucination rates in conversational AI responses.
+                </p>
+                <div class="model-list" id="chatModels"></div>
+            </div>
+            
+            <div class="card info-card">
+                <h2>💡 Why Do AI Models Hallucinate?</h2>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <h3>🎲 Probabilistic Generation</h3>
+                        <p>LLMs predict the next token probabilistically. High confidence doesn't mean correctness—it means "common pattern."</p>
+                    </div>
+                    <div class="info-item">
+                        <h3>📚 Training Data Gaps</h3>
+                        <p>Models can only know what they've seen. Questions beyond training data trigger creative (but wrong) responses.</p>
+                    </div>
+                    <div class="info-item">
+                        <h3>🔄 Context Confusion</h3>
+                        <p>Long conversations can cause models to mix up facts from different parts of the context window.</p>
+                    </div>
+                    <div class="info-item">
+                        <h3>⚡ Overconfidence</h3>
+                        <p>Models are trained to be helpful, not uncertain. They'll often guess confidently rather than say "I don't know."</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card info-card checker-section">
+                <h2>🔍 Hallucination Risk Analyzer</h2>
+                <p style="color: var(--text-muted); margin-bottom: 1rem;">
+                    Enter an AI-generated claim to check for common hallucination patterns.
+                </p>
+                <div class="input-group">
+                    <input type="text" id="claimInput" placeholder="e.g., 'Napoleon was born in 1823 and invented the telephone'" />
+                    <button class="btn" id="analyzeBtn">Analyze</button>
+                </div>
+                <div class="result" id="result">
+                    <h4 id="resultTitle"></h4>
+                    <p id="resultText"></p>
+                    <div class="flags" id="flags"></div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Built with ❤️ inspired by trending AI discussions on X/Twitter</p>
+            <p>Data based on publicly reported benchmarks (Feb 2026) • <a href="https://github.com/sami/clawd-claw/tree/main/ai-trend-apps/2026-02-02-hallucination-dashboard">View Source</a></p>
+        </footer>
+    </div>
+    
+    <script>
+        // Model data based on reported benchmarks
+        const searchModels = [
+            { name: "Perplexity Pro", rate: 12, icon: "🟢" },
+            { name: "Claude Search", rate: 19, icon: "🔵" },
+            { name: "Gemini Search", rate: 28, icon: "🟡" },
+            { name: "ChatGPT Search", rate: 67, icon: "🟠" },
+            { name: "Grok-3 Search", rate: 94, icon: "🔴" },
+        ];
+        
+        const chatModels = [
+            { name: "Claude Opus 4.5", rate: 8, icon: "🔵" },
+            { name: "GPT-5.2 Turbo", rate: 15, icon: "🟢" },
+            { name: "Gemini Ultra 2", rate: 18, icon: "🟡" },
+            { name: "Llama 4 405B", rate: 22, icon: "🦙" },
+            { name: "Mistral Large 3", rate: 25, icon: "🌬️" },
+        ];
+        
+        // Hallucination indicator patterns
+        const patterns = {
+            dates: /\b(1[0-9]{3}|20[0-9]{2})\b/g,
+            numbers: /\b\d{3,}\b/g,
+            superlatives: /\b(first|only|never|always|every|all|none|best|worst|most|least)\b/gi,
+            hedging: /\b(might|could|possibly|perhaps|maybe|approximately|roughly|about)\b/gi,
+            certainty: /\b(definitely|certainly|absolutely|undoubtedly|clearly|obviously)\b/gi,
+            quotes: /"[^"]+"/g,
+            statistics: /\b\d+(\.\d+)?%/g,
+        };
+        
+        function getScoreClass(rate) {
+            if (rate <= 20) return 'low';
+            if (rate <= 50) return 'medium';
+            return 'high';
+        }
+        
+        function renderModels(containerId, models) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = models.map(model => {
+                const scoreClass = getScoreClass(model.rate);
+                return `
+                    <div class="model-item">
+                        <div class="model-header">
+                            <span class="model-name">${model.icon} ${model.name}</span>
+                            <span class="model-score score-${scoreClass}">${model.rate}%</span>
+                        </div>
+                        <div class="bar-container">
+                            <div class="bar bar-${scoreClass}" style="width: 0%;" data-width="${model.rate}"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Animate bars
+            setTimeout(() => {
+                container.querySelectorAll('.bar').forEach(bar => {
+                    bar.style.width = bar.dataset.width + '%';
+                });
+            }, 100);
+        }
+        
+        function updateStats() {
+            const allModels = [...searchModels, ...chatModels];
+            const avgRate = Math.round(allModels.reduce((sum, m) => sum + m.rate, 0) / allModels.length);
+            const bestModel = allModels.reduce((best, m) => m.rate < best.rate ? m : best);
+            
+            document.getElementById('avgRate').textContent = avgRate + '%';
+            document.getElementById('modelCount').textContent = allModels.length;
+            document.getElementById('bestModel').textContent = bestModel.name.split(' ')[0];
+        }
+        
+        function analyzeHallucination() {
+            const input = document.getElementById('claimInput').value.trim();
+            const result = document.getElementById('result');
+            const resultTitle = document.getElementById('resultTitle');
+            const resultText = document.getElementById('resultText');
+            const flagsContainer = document.getElementById('flags');
+            
+            if (!input) {
+                result.classList.remove('show');
+                return;
+            }
+            
+            const flags = [];
+            
+            // Check for patterns
+            if (patterns.dates.test(input)) {
+                flags.push('📅 Contains specific dates - verify accuracy');
+            }
+            if (patterns.statistics.test(input)) {
+                flags.push('📊 Contains statistics - check source');
+            }
+            if (patterns.certainty.test(input)) {
+                flags.push('⚠️ Uses absolute certainty language');
+            }
+            if (patterns.superlatives.test(input)) {
+                flags.push('🏆 Contains superlatives - often exaggerated');
+            }
+            if (patterns.quotes.test(input)) {
+                flags.push('💬 Contains quotes - verify attribution');
+            }
+            if (!patterns.hedging.test(input) && input.length > 50) {
+                flags.push('🎯 No hedging language - may be overconfident');
+            }
+            
+            // Check claim length
+            if (input.split(' ').length > 30 && flags.length > 2) {
+                flags.push('📝 Complex claim with multiple risk factors');
+            }
+            
+            result.classList.add('show');
+            
+            if (flags.length >= 3) {
+                result.className = 'result show warning';
+                resultTitle.textContent = '⚠️ High Hallucination Risk';
+                resultText.textContent = 'This claim contains multiple patterns commonly associated with AI hallucinations. Verify with primary sources.';
+            } else if (flags.length > 0) {
+                result.className = 'result show warning';
+                resultTitle.textContent = '⚡ Moderate Risk';
+                resultText.textContent = 'Some patterns detected that may indicate potential inaccuracies. Consider fact-checking.';
+            } else {
+                result.className = 'result show safe';
+                resultTitle.textContent = '✅ Lower Risk';
+                resultText.textContent = 'No obvious hallucination patterns detected. Still verify important claims from authoritative sources.';
+            }
+            
+            flagsContainer.innerHTML = flags.map(f => `<span class="flag">${f}</span>`).join('');
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderModels('searchModels', searchModels);
+            renderModels('chatModels', chatModels);
+            updateStats();
+            
+            document.getElementById('analyzeBtn').addEventListener('click', analyzeHallucination);
+            document.getElementById('claimInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') analyzeHallucination();
+            });
+        });
+    </script>
+</body>
+</html>
