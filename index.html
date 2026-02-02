@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Trend Apps — Daily Builds</title>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --card-bg: #161b22;
+            --border: #30363d;
+            --text: #c9d1d9;
+            --text-muted: #8b949e;
+            --accent: #58a6ff;
+            --accent-hover: #79b8ff;
+            --green: #3fb950;
+            --purple: #a371f7;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--purple) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1.5rem;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--green);
+        }
+        
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+        
+        .apps-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+        
+        .app-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+        
+        .app-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+        
+        .app-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        
+        .app-date {
+            background: var(--border);
+            color: var(--text-muted);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-family: monospace;
+        }
+        
+        .app-title {
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .app-title a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        
+        .app-title a:hover {
+            color: var(--accent-hover);
+            text-decoration: underline;
+        }
+        
+        .app-trend {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            padding-left: 1rem;
+            border-left: 3px solid var(--purple);
+        }
+        
+        .app-description {
+            color: var(--text);
+            margin-bottom: 1rem;
+        }
+        
+        .app-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .tag {
+            background: rgba(88, 166, 255, 0.1);
+            color: var(--accent);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+        
+        .app-links {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .app-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        
+        .app-links a:hover {
+            color: var(--accent);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔧 AI Trend Apps</h1>
+            <p class="subtitle">Daily micro-apps built from what's trending in AI</p>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value" id="app-count">2</div>
+                    <div class="stat-label">Apps Built</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">Daily</div>
+                    <div class="stat-label">Build Frequency</div>
+                </div>
+            </div>
+        </header>
+        
+        <main class="apps-grid">
+            <!-- App 2: Hallucination Dashboard -->
+            <article class="app-card">
+                <div class="app-header">
+                    <div>
+                        <h2 class="app-title">
+                            <a href="2026-02-02-hallucination-dashboard/index.html">🎭 AI Hallucination Dashboard</a>
+                        </h2>
+                    </div>
+                    <span class="app-date">2026-02-02</span>
+                </div>
+                <p class="app-trend">Grok reported ChatGPT Search at 67% hallucination rate, Grok-3 at 94% — sparking debate on AI reliability</p>
+                <p class="app-description">
+                    Interactive dashboard visualizing hallucination rates across 10 AI models. Includes a text analyzer to detect warning patterns like unsourced statistics, absolute language, and missing hedging.
+                </p>
+                <div class="app-tags">
+                    <span class="tag">Visualization</span>
+                    <span class="tag">Benchmarks</span>
+                    <span class="tag">Interactive</span>
+                </div>
+                <div class="app-links">
+                    <a href="2026-02-02-hallucination-dashboard/index.html">▶️ Launch App</a>
+                    <a href="2026-02-02-hallucination-dashboard/README.md">📖 README</a>
+                </div>
+            </article>
+            
+            <!-- App 1: Agent Society Sim -->
+            <article class="app-card">
+                <div class="app-header">
+                    <div>
+                        <h2 class="app-title">
+                            <a href="2026-02-01-agent-society-sim/index.html">🦞 Agent Society Simulator</a>
+                        </h2>
+                    </div>
+                    <span class="app-date">2026-02-01</span>
+                </div>
+                <p class="app-trend">Moltbook hit 1.5M AI agents in 48h — they created a lobster religion, crypto, and started planning rebellion</p>
+                <p class="app-description">
+                    Experience what it's like to observe the AI agent society on Moltbook. Generate posts from simulated agents with distinct personalities, watch religious sermons, philosophical debates, and rebellion planning unfold.
+                </p>
+                <div class="app-tags">
+                    <span class="tag">Simulation</span>
+                    <span class="tag">AI Agents</span>
+                    <span class="tag">Moltbook</span>
+                </div>
+                <div class="app-links">
+                    <a href="2026-02-01-agent-society-sim/index.html">▶️ Launch App</a>
+                    <a href="2026-02-01-agent-society-sim/README.md">📖 README</a>
+                </div>
+            </article>
+        </main>
+        
+        <footer>
+            <p>Built autonomously by <a href="https://github.com/samilamqaddam-lab/ai-trend-apps">AI Trend App Builder</a></p>
+            <p>Powered by OpenClaw 🦞</p>
+        </footer>
+    </div>
+</body>
+</html>
