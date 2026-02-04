@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 Task Decomposer — Desktop Automation Planner</title>
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --card: #13131a;
+            --border: #2a2a3d;
+            --text: #e4e4ed;
+            --muted: #8888a0;
+            --accent: #6366f1;
+            --accent-light: #818cf8;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            color: var(--muted);
+        }
+        
+        .trend-box {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--accent);
+        }
+        
+        .trend-box strong { color: var(--accent-light); }
+        .trend-box a { color: var(--accent-light); }
+        
+        .input-section {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .input-section label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text);
+        }
+        
+        .input-row {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        #task-input {
+            flex: 1;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem;
+            color: var(--text);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        
+        #task-input:focus {
+            border-color: var(--accent);
+        }
+        
+        #task-input::placeholder {
+            color: var(--muted);
+        }
+        
+        button {
+            background: var(--gradient);
+            border: none;
+            border-radius: 10px;
+            padding: 1rem 2rem;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .examples {
+            margin-top: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .example-btn {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+        
+        .example-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent-light);
+            transform: none;
+        }
+        
+        .results {
+            display: none;
+        }
+        
+        .results.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .task-header {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .task-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .task-stats {
+            display: flex;
+            gap: 1.5rem;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent-light);
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+        
+        .steps-container {
+            position: relative;
+        }
+        
+        .timeline {
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border);
+        }
+        
+        .step {
+            position: relative;
+            padding-left: 60px;
+            margin-bottom: 1.5rem;
+            animation: slideIn 0.3s ease;
+            animation-fill-mode: both;
+        }
+        
+        .step:nth-child(1) { animation-delay: 0.1s; }
+        .step:nth-child(2) { animation-delay: 0.2s; }
+        .step:nth-child(3) { animation-delay: 0.3s; }
+        .step:nth-child(4) { animation-delay: 0.4s; }
+        .step:nth-child(5) { animation-delay: 0.5s; }
+        .step:nth-child(6) { animation-delay: 0.6s; }
+        .step:nth-child(7) { animation-delay: 0.7s; }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .step-marker {
+            position: absolute;
+            left: 8px;
+            top: 0;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            z-index: 1;
+        }
+        
+        .step-marker.click { background: #3b82f6; }
+        .step-marker.type { background: #8b5cf6; }
+        .step-marker.wait { background: #f59e0b; }
+        .step-marker.find { background: #22c55e; }
+        .step-marker.drag { background: #ec4899; }
+        .step-marker.check { background: #14b8a6; }
+        .step-marker.open { background: #6366f1; }
+        
+        .step-content {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+        }
+        
+        .step-content:hover {
+            border-color: var(--accent);
+        }
+        
+        .step-action {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .action-type {
+            background: var(--bg);
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .action-type.click { color: #3b82f6; }
+        .action-type.type { color: #8b5cf6; }
+        .action-type.wait { color: #f59e0b; }
+        .action-type.find { color: #22c55e; }
+        .action-type.drag { color: #ec4899; }
+        .action-type.check { color: #14b8a6; }
+        .action-type.open { color: #6366f1; }
+        
+        .step-description {
+            font-size: 0.95rem;
+        }
+        
+        .step-target {
+            color: var(--accent-light);
+            font-family: monospace;
+            background: rgba(99, 102, 241, 0.1);
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+        }
+        
+        .step-meta {
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--muted);
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .warning-box {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 0.75rem;
+        }
+        
+        .warning-box .icon { font-size: 1.25rem; }
+        .warning-box .text { color: var(--warning); font-size: 0.9rem; }
+        
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 0.85rem;
+        }
+        
+        footer a { color: var(--accent-light); text-decoration: none; }
+        
+        @media (max-width: 600px) {
+            .container { padding: 1rem; }
+            h1 { font-size: 1.8rem; }
+            .input-row { flex-direction: column; }
+            .task-header { flex-direction: column; gap: 1rem; }
+            .timeline { left: 15px; }
+            .step { padding-left: 45px; }
+            .step-marker { left: 3px; width: 24px; height: 24px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 Task Decomposer</h1>
+            <p class="subtitle">See how AI breaks down your tasks into desktop automation steps</p>
+        </header>
+        
+        <div class="trend-box">
+            <strong>📈 Inspired by:</strong> <a href="https://github.com/bytedance/UI-TARS-desktop" target="_blank">UI-TARS</a> — ByteDance's local desktop automation agent that "runs 100% locally, controls any app, opens files, browses websites, automates tasks without internet."
+        </div>
+        
+        <div class="input-section">
+            <label for="task-input">What do you want to automate?</label>
+            <div class="input-row">
+                <input type="text" id="task-input" placeholder="e.g., Organize my Downloads folder by file type" autocomplete="off">
+                <button id="decompose-btn">🔍 Decompose</button>
+            </div>
+            <div class="examples">
+                <button class="example-btn" data-task="Organize my Downloads folder by file type">📁 Organize Downloads</button>
+                <button class="example-btn" data-task="Screenshot all open tabs and save them">📸 Screenshot Tabs</button>
+                <button class="example-btn" data-task="Close all apps except Chrome and VS Code">🧹 Clean Desktop</button>
+                <button class="example-btn" data-task="Find and delete files larger than 100MB">🗑️ Free Space</button>
+                <button class="example-btn" data-task="Back up Documents to external drive">💾 Backup Docs</button>
+            </div>
+        </div>
+        
+        <div class="results" id="results">
+            <div class="task-header">
+                <div class="task-name" id="task-name"></div>
+                <div class="task-stats">
+                    <div class="stat">
+                        <div class="stat-value" id="step-count">0</div>
+                        <div class="stat-label">Steps</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="est-time">~0s</div>
+                        <div class="stat-label">Est. Time</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="risk-level">Low</div>
+                        <div class="stat-label">Risk</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="steps-container">
+                <div class="timeline"></div>
+                <div id="steps-list"></div>
+            </div>
+            
+            <div class="warning-box" id="warning-box" style="display: none;">
+                <span class="icon">⚠️</span>
+                <span class="text" id="warning-text"></span>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Built for <a href="../index.html">AI Trend Apps</a> — inspired by UI-TARS's vision for local AI automation</p>
+            <p>Try the real thing: <a href="https://github.com/bytedance/UI-TARS-desktop" target="_blank">github.com/bytedance/UI-TARS-desktop</a></p>
+        </footer>
+    </div>
+    
+    <script>
+        const taskTemplates = {
+            'organize': {
+                pattern: /organiz|sort|arrang|folder/i,
+                steps: (task) => [
+                    { type: 'open', desc: 'Open Finder/File Explorer', target: 'file_manager', time: 1 },
+                    { type: 'find', desc: 'Navigate to target folder', target: extractPath(task) || 'Downloads', time: 2 },
+                    { type: 'find', desc: 'Scan folder contents for file types', target: '*.{jpg,pdf,doc,...}', time: 3 },
+                    { type: 'click', desc: 'Create subfolders for each type', target: 'New Folder → Images, Documents, etc.', time: 4 },
+                    { type: 'drag', desc: 'Move files to appropriate subfolders', target: 'file → subfolder', time: 10, risk: true },
+                    { type: 'check', desc: 'Verify all files moved correctly', target: 'folder_structure', time: 2 }
+                ],
+                warning: 'This operation moves files. Ensure you have backups.',
+                risk: 'Medium'
+            },
+            'screenshot': {
+                pattern: /screenshot|capture|snap/i,
+                steps: (task) => [
+                    { type: 'find', desc: 'Enumerate all open windows/tabs', target: 'window_list', time: 1 },
+                    { type: 'click', desc: 'Focus first window', target: 'window[0]', time: 1 },
+                    { type: 'wait', desc: 'Wait for window to render', target: '500ms', time: 1 },
+                    { type: 'click', desc: 'Trigger screenshot (⌘+Shift+4)', target: 'screenshot_tool', time: 1 },
+                    { type: 'drag', desc: 'Select capture area', target: 'window_bounds', time: 1 },
+                    { type: 'type', desc: 'Save with timestamp filename', target: 'screenshot_2026-02-04_001.png', time: 1 },
+                    { type: 'check', desc: 'Repeat for remaining windows', target: 'loop(windows)', time: 5 }
+                ],
+                risk: 'Low'
+            },
+            'close': {
+                pattern: /close|quit|exit|kill/i,
+                steps: (task) => [
+                    { type: 'find', desc: 'List all running applications', target: 'process_list', time: 1 },
+                    { type: 'check', desc: 'Identify apps to keep', target: extractApps(task), time: 1 },
+                    { type: 'find', desc: 'Filter apps to close', target: 'except(keep_list)', time: 1 },
+                    { type: 'click', desc: 'Send quit command to each app', target: '⌘+Q → app', time: 3, risk: true },
+                    { type: 'wait', desc: 'Wait for graceful shutdown', target: '2000ms', time: 2 },
+                    { type: 'check', desc: 'Force-quit unresponsive apps', target: 'SIGKILL if needed', time: 1 }
+                ],
+                warning: 'Unsaved work in closed apps will be lost!',
+                risk: 'High'
+            },
+            'delete': {
+                pattern: /delete|remove|clean|free\s*space/i,
+                steps: (task) => [
+                    { type: 'open', desc: 'Open system file browser', target: 'file_manager', time: 1 },
+                    { type: 'find', desc: 'Search for matching files', target: extractCriteria(task) || 'size > 100MB', time: 5 },
+                    { type: 'check', desc: 'Display files for review', target: 'file_list_ui', time: 2 },
+                    { type: 'wait', desc: 'Await user confirmation', target: 'user_input', time: 0 },
+                    { type: 'drag', desc: 'Move files to Trash', target: 'selected_files → Trash', time: 5, risk: true },
+                    { type: 'check', desc: 'Show freed space summary', target: 'disk_usage_diff', time: 1 }
+                ],
+                warning: 'Deleted files go to Trash but verify before emptying.',
+                risk: 'Medium'
+            },
+            'backup': {
+                pattern: /backup|copy|sync|export/i,
+                steps: (task) => [
+                    { type: 'find', desc: 'Locate source folder', target: extractPath(task) || 'Documents', time: 1 },
+                    { type: 'find', desc: 'Detect connected external drives', target: '/Volumes/*', time: 2 },
+                    { type: 'check', desc: 'Calculate total size to copy', target: 'du -sh source', time: 2 },
+                    { type: 'check', desc: 'Verify destination has space', target: 'df -h destination', time: 1 },
+                    { type: 'drag', desc: 'Copy files with progress', target: 'rsync -av source dest', time: 30 },
+                    { type: 'check', desc: 'Verify backup integrity', target: 'checksum_compare', time: 5 }
+                ],
+                risk: 'Low'
+            },
+            'default': {
+                steps: (task) => [
+                    { type: 'find', desc: 'Parse natural language intent', target: `"${task.slice(0,30)}..."`, time: 1 },
+                    { type: 'find', desc: 'Identify required applications', target: 'app_matcher', time: 1 },
+                    { type: 'open', desc: 'Launch necessary applications', target: 'detected_apps', time: 2 },
+                    { type: 'find', desc: 'Locate relevant UI elements', target: 'vision_model_scan', time: 3 },
+                    { type: 'click', desc: 'Execute primary action', target: 'element[main_action]', time: 2 },
+                    { type: 'check', desc: 'Verify task completion', target: 'expected_state', time: 2 }
+                ],
+                risk: 'Unknown'
+            }
+        };
+        
+        function extractPath(task) {
+            const paths = task.match(/(Downloads|Documents|Desktop|Pictures|Music|Videos)/i);
+            return paths ? paths[1] : null;
+        }
+        
+        function extractApps(task) {
+            const apps = task.match(/except\s+(.+)/i);
+            return apps ? apps[1] : 'user_specified_apps';
+        }
+        
+        function extractCriteria(task) {
+            const size = task.match(/(\d+)\s*(MB|GB|KB)/i);
+            return size ? `size > ${size[1]}${size[2]}` : null;
+        }
+        
+        function findTemplate(task) {
+            for (const [key, template] of Object.entries(taskTemplates)) {
+                if (key !== 'default' && template.pattern && template.pattern.test(task)) {
+                    return template;
+                }
+            }
+            return taskTemplates.default;
+        }
+        
+        function decompose(task) {
+            const template = findTemplate(task);
+            const steps = template.steps(task);
+            const totalTime = steps.reduce((sum, s) => sum + s.time, 0);
+            const hasRisk = steps.some(s => s.risk);
+            
+            return {
+                steps,
+                totalTime,
+                risk: template.risk || (hasRisk ? 'Medium' : 'Low'),
+                warning: template.warning
+            };
+        }
+        
+        function renderSteps(result, task) {
+            const resultsEl = document.getElementById('results');
+            const stepsListEl = document.getElementById('steps-list');
+            const warningBox = document.getElementById('warning-box');
+            
+            document.getElementById('task-name').textContent = task;
+            document.getElementById('step-count').textContent = result.steps.length;
+            document.getElementById('est-time').textContent = `~${result.totalTime}s`;
+            document.getElementById('risk-level').textContent = result.risk;
+            document.getElementById('risk-level').style.color = 
+                result.risk === 'High' ? '#ef4444' : 
+                result.risk === 'Medium' ? '#f59e0b' : '#22c55e';
+            
+            stepsListEl.innerHTML = result.steps.map((step, i) => `
+                <div class="step">
+                    <div class="step-marker ${step.type}">${i + 1}</div>
+                    <div class="step-content">
+                        <div class="step-action">
+                            <span class="action-type ${step.type}">${step.type}</span>
+                            <span class="step-description">${step.desc}</span>
+                        </div>
+                        <div class="step-meta">
+                            <span>Target: <span class="step-target">${step.target}</span></span>
+                            <span>~${step.time}s</span>
+                            ${step.risk ? '<span style="color: #f59e0b;">⚠️ Destructive</span>' : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            if (result.warning) {
+                warningBox.style.display = 'flex';
+                document.getElementById('warning-text').textContent = result.warning;
+            } else {
+                warningBox.style.display = 'none';
+            }
+            
+            resultsEl.classList.add('active');
+        }
+        
+        // Event listeners
+        document.getElementById('decompose-btn').addEventListener('click', () => {
+            const task = document.getElementById('task-input').value.trim();
+            if (!task) return;
+            
+            const result = decompose(task);
+            renderSteps(result, task);
+        });
+        
+        document.getElementById('task-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('decompose-btn').click();
+            }
+        });
+        
+        document.querySelectorAll('.example-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const task = btn.dataset.task;
+                document.getElementById('task-input').value = task;
+                const result = decompose(task);
+                renderSteps(result, task);
+            });
+        });
+    </script>
+</body>
+</html>
