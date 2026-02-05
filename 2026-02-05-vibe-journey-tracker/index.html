@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vibe Coding Journey Tracker 🎢</title>
+    <style>
+        :root {
+            --bg: #0f0f1a;
+            --card-bg: #1a1a2e;
+            --border: #2d2d44;
+            --text: #e0e0e0;
+            --text-muted: #8888aa;
+            --vibe: #ff6b9d;
+            --agentic: #00d4aa;
+            --warning: #ffaa00;
+            --danger: #ff4444;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--vibe), var(--agentic));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+        
+        .anniversary {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--vibe), var(--agentic));
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+            color: #fff;
+        }
+        
+        .tracker-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            background: linear-gradient(90deg, var(--vibe), var(--warning), var(--danger), var(--agentic));
+            border-radius: 4px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            background: #fff;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        
+        .hour-display {
+            text-align: center;
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 1rem 0;
+        }
+        
+        .checkboxes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .checkbox-item:hover {
+            background: rgba(255,255,255,0.06);
+        }
+        
+        .checkbox-item input {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--vibe);
+        }
+        
+        .result-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .stage-emoji {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .stage-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stage-description {
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--vibe), var(--agentic));
+            transition: width 0.5s ease;
+        }
+        
+        .progress-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        
+        .tips {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+            text-align: left;
+        }
+        
+        .tips h3 {
+            font-size: 0.9rem;
+            color: var(--agentic);
+            margin-bottom: 0.75rem;
+        }
+        
+        .tips ul {
+            list-style: none;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        
+        .tips li {
+            padding: 0.3rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        
+        .tips li::before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: var(--agentic);
+        }
+        
+        .quote-box {
+            background: rgba(255,107,157,0.1);
+            border-left: 3px solid var(--vibe);
+            padding: 1rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+            font-size: 0.9rem;
+        }
+        
+        .quote-author {
+            color: var(--vibe);
+            font-style: normal;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+        
+        footer a {
+            color: var(--agentic);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎢 Vibe Coding Journey Tracker</h1>
+            <p class="subtitle">Track your emotional rollercoaster from vibe coder to agentic engineer</p>
+            <span class="anniversary">🎂 1 Year of Vibe Coding — Feb 2026</span>
+        </header>
+        
+        <div class="quote-box">
+            "There's a new kind of coding I call 'vibe coding', where you fully give in to the vibes, embrace exponentials, and forget that the code even exists."
+            <div class="quote-author">— Andrej Karpathy, Feb 2025</div>
+        </div>
+        
+        <div class="tracker-panel">
+            <div class="input-group">
+                <label>⏰ Hours into your coding session:</label>
+                <input type="range" id="hours" min="0" max="12" step="0.5" value="1">
+                <div class="hour-display" id="hourDisplay">1h</div>
+            </div>
+            
+            <div class="input-group">
+                <label>🔥 What have you experienced? (check all that apply)</label>
+                <div class="checkboxes">
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="magic" checked> "This is magic!"
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="shipping"> "Shipping in days not weeks"
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="authBroken"> Auth broke... again
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="rewrite"> AI suggested full rewrite
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="stackoverflow"> Googled "why won't this work"
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="cursor"> Yelled at Cursor/Claude
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="tests"> Actually wrote tests
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="review"> Did a code review
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="docs"> Wrote documentation
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="shipped"> Actually shipped something
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="result-panel">
+            <div class="stage-emoji" id="stageEmoji">✨</div>
+            <div class="stage-title" id="stageTitle">Pure Vibes</div>
+            <div class="stage-description" id="stageDescription">
+                You're in the honeymoon phase. Everything feels possible. The AI understands you. Reality hasn't hit yet.
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 10%"></div>
+            </div>
+            <div class="progress-labels">
+                <span style="color: var(--vibe)">Vibe Coder</span>
+                <span style="color: var(--agentic)">Agentic Engineer</span>
+            </div>
+            
+            <div class="tips" id="tips">
+                <h3>💡 Pro Tips for This Stage:</h3>
+                <ul id="tipsList">
+                    <li>Enjoy the magic while it lasts</li>
+                    <li>Screenshot your progress for later</li>
+                    <li>Don't look at the generated code too closely</li>
+                </ul>
+            </div>
+        </div>
+        
+        <footer>
+            Inspired by <a href="https://x.com/karpathy" target="_blank">@karpathy</a>'s vibe coding anniversary retrospective.
+            <br>Built during the great transition to <strong>Agentic Engineering</strong>.
+        </footer>
+    </div>
+    
+    <script>
+        const stages = [
+            {
+                emoji: "✨",
+                title: "Pure Vibes",
+                description: "You're in the honeymoon phase. Everything feels possible. The AI understands you. You're about to ship in days what would take weeks.",
+                tips: ["Enjoy the magic while it lasts", "Screenshot your progress for later", "Don't look at the generated code too closely"],
+                minProgress: 0
+            },
+            {
+                emoji: "🚀",
+                title: "Shipping Vibes",
+                description: "The momentum is real. Features are flying. You've forgotten what Stack Overflow looks like. This is the future of coding.",
+                tips: ["Commit frequently (you might want to rollback)", "Note what's actually working", "Take a break before you burn out"],
+                minProgress: 15
+            },
+            {
+                emoji: "🤔",
+                title: "First Doubts",
+                description: "Wait, why did it add that? The auth is a bit... creative. Maybe you should read some of this code after all.",
+                tips: ["This is normal, stay calm", "Start reviewing critical paths", "Consider adding a test or two"],
+                minProgress: 30
+            },
+            {
+                emoji: "😤",
+                title: "The Struggle",
+                description: "Hour 3-5 energy. Auth is broken again. The AI keeps suggesting a full rewrite. You've whispered 'why' at least 5 times.",
+                tips: ["Step back and think architecturally", "Break the problem into smaller pieces", "Consider manual fixes for critical bugs"],
+                minProgress: 45
+            },
+            {
+                emoji: "🔥",
+                title: "Debugging Inferno",
+                description: "You're knee-deep in AI-generated spaghetti. The vibes have left. Only determination remains. You've started adding console.logs.",
+                tips: ["Write tests for what you're fixing", "Document the edge cases", "This is where real learning happens"],
+                minProgress: 60
+            },
+            {
+                emoji: "🧘",
+                title: "Acceptance",
+                description: "You've accepted that AI is a tool, not magic. You're reviewing code. Writing tests. Thinking about architecture. The vibes were just the beginning.",
+                tips: ["Set up proper review loops", "Create evaluation criteria", "Design for rollback capability"],
+                minProgress: 75
+            },
+            {
+                emoji: "🎯",
+                title: "Agentic Engineer",
+                description: "You've transcended vibe coding. You orchestrate AI as a collaborator with oversight. Tests, reviews, architecture—you've got it all. Welcome to the evolution.",
+                tips: ["Share your learnings with others", "Build reusable patterns", "You've earned your title 🏆"],
+                minProgress: 90
+            }
+        ];
+        
+        function calculateProgress() {
+            const hours = parseFloat(document.getElementById('hours').value);
+            const checks = {
+                magic: document.getElementById('magic').checked,
+                shipping: document.getElementById('shipping').checked,
+                authBroken: document.getElementById('authBroken').checked,
+                rewrite: document.getElementById('rewrite').checked,
+                stackoverflow: document.getElementById('stackoverflow').checked,
+                cursor: document.getElementById('cursor').checked,
+                tests: document.getElementById('tests').checked,
+                review: document.getElementById('review').checked,
+                docs: document.getElementById('docs').checked,
+                shipped: document.getElementById('shipped').checked
+            };
+            
+            // Base progress from hours (0-50%)
+            let progress = Math.min(hours * 5, 50);
+            
+            // Early stage markers (keep progress low)
+            if (checks.magic && hours < 2) progress = Math.min(progress, 20);
+            if (checks.shipping && hours < 3) progress += 5;
+            
+            // Struggle markers
+            if (checks.authBroken) progress += 10;
+            if (checks.rewrite) progress += 10;
+            if (checks.stackoverflow) progress += 5;
+            if (checks.cursor) progress += 8;
+            
+            // Maturity markers (big jumps)
+            if (checks.tests) progress += 15;
+            if (checks.review) progress += 15;
+            if (checks.docs) progress += 10;
+            if (checks.shipped && (checks.tests || checks.review)) progress += 10;
+            
+            return Math.min(Math.max(progress, 5), 100);
+        }
+        
+        function getStage(progress) {
+            let stage = stages[0];
+            for (const s of stages) {
+                if (progress >= s.minProgress) {
+                    stage = s;
+                }
+            }
+            return stage;
+        }
+        
+        function updateDisplay() {
+            const hours = parseFloat(document.getElementById('hours').value);
+            document.getElementById('hourDisplay').textContent = hours + 'h';
+            
+            const progress = calculateProgress();
+            const stage = getStage(progress);
+            
+            document.getElementById('stageEmoji').textContent = stage.emoji;
+            document.getElementById('stageTitle').textContent = stage.title;
+            document.getElementById('stageDescription').textContent = stage.description;
+            document.getElementById('progressFill').style.width = progress + '%';
+            
+            const tipsList = document.getElementById('tipsList');
+            tipsList.innerHTML = stage.tips.map(tip => `<li>${tip}</li>`).join('');
+            
+            // Update emoji color based on stage
+            const emoji = document.getElementById('stageEmoji');
+            if (progress < 30) {
+                emoji.style.filter = 'hue-rotate(0deg)';
+            } else if (progress < 60) {
+                emoji.style.filter = 'hue-rotate(30deg)';
+            } else {
+                emoji.style.filter = 'hue-rotate(120deg)';
+            }
+        }
+        
+        // Event listeners
+        document.getElementById('hours').addEventListener('input', updateDisplay);
+        document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+            cb.addEventListener('change', updateDisplay);
+        });
+        
+        // Initial display
+        updateDisplay();
+    </script>
+</body>
+</html>
