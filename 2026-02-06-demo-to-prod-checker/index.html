@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo → Production Checker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .trend-quote {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            color: white;
+            border-left: 4px solid #ffd700;
+        }
+
+        .trend-quote p {
+            font-style: italic;
+            margin-bottom: 10px;
+            font-size: 1.05rem;
+        }
+
+        .trend-quote cite {
+            display: block;
+            text-align: right;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .panel h2 {
+            margin-bottom: 15px;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 400px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .analyze-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .analyze-btn:active {
+            transform: translateY(0);
+        }
+
+        .results {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .score-display {
+            text-align: center;
+            padding: 30px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 12px;
+            color: white;
+        }
+
+        .score-number {
+            font-size: 4rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .score-label {
+            font-size: 1.2rem;
+            opacity: 0.95;
+        }
+
+        .checklist-section {
+            margin-bottom: 25px;
+        }
+
+        .checklist-section h3 {
+            margin-bottom: 12px;
+            color: #444;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checklist-item {
+            background: #f8f9fa;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #ddd;
+            transition: all 0.3s;
+        }
+
+        .checklist-item.pass {
+            background: #d4edda;
+            border-left-color: #28a745;
+        }
+
+        .checklist-item.fail {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+        }
+
+        .checklist-item.warning {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+        }
+
+        .item-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+
+        .status-icon {
+            font-size: 1.2rem;
+        }
+
+        .item-title {
+            font-weight: 600;
+            flex: 1;
+        }
+
+        .item-description {
+            font-size: 0.9rem;
+            color: #666;
+            margin-left: 32px;
+        }
+
+        .placeholder {
+            text-align: center;
+            color: #999;
+            padding: 60px 20px;
+        }
+
+        .placeholder-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            textarea {
+                height: 300px;
+            }
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Demo → Production Checker</h1>
+            <p>Bridge the canyon between AI demos and production-ready code</p>
+        </div>
+
+        <div class="trend-quote">
+            <p>"demo to production gap in AI is a canyon. most well intentioned AI strategy go to die there. demos are magic tricks. production is plumbing. most teams are great at magic and terrible at pipes."</p>
+            <cite>— @mtrajan, Feb 6 2026</cite>
+        </div>
+
+        <div class="main-content">
+            <div class="panel">
+                <h2>📝 Paste Your Code</h2>
+                <textarea id="codeInput" placeholder="Paste your AI-generated code here...
+
+Example:
+function fetchUserData() {
+    const response = fetch('/api/users');
+    return response.json();
+}"></textarea>
+                <button class="analyze-btn" onclick="analyzeCode()">🔍 Analyze Production Readiness</button>
+            </div>
+
+            <div class="panel">
+                <h2>📊 Production Readiness Report</h2>
+                <div id="results" class="results">
+                    <div class="placeholder">
+                        <div class="placeholder-icon">🎯</div>
+                        <p>Paste your code and click "Analyze" to get started</p>
+                        <p style="margin-top: 10px; font-size: 0.9rem;">We'll check for error handling, testing, security, performance, and more!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function analyzeCode() {
+            const code = document.getElementById('codeInput').value.trim();
+            
+            if (!code) {
+                alert('Please paste some code to analyze!');
+                return;
+            }
+
+            const checks = [
+                {
+                    category: 'Error Handling',
+                    icon: '🛡️',
+                    items: [
+                        {
+                            name: 'Try-Catch Blocks',
+                            test: /try\s*{[\s\S]*?}\s*catch/i,
+                            advice: 'Add try-catch blocks to handle runtime errors gracefully'
+                        },
+                        {
+                            name: 'Error Validation',
+                            test: /if\s*\([^)]*error|throw\s+new\s+Error/i,
+                            advice: 'Validate responses and handle error states explicitly'
+                        },
+                        {
+                            name: 'Async Error Handling',
+                            test: /\.catch\(|catch\s*\(/i,
+                            advice: 'Handle promise rejections with .catch() or try-catch in async functions'
+                        }
+                    ]
+                },
+                {
+                    category: 'Security',
+                    icon: '🔒',
+                    items: [
+                        {
+                            name: 'Input Validation',
+                            test: /validate|sanitize|escape|trim\(\)/i,
+                            advice: 'Validate and sanitize all user inputs to prevent injection attacks'
+                        },
+                        {
+                            name: 'Authentication Check',
+                            test: /auth|token|jwt|session/i,
+                            advice: 'Implement authentication and authorization checks'
+                        },
+                        {
+                            name: 'HTTPS Usage',
+                            test: /https:\/\/|ssl|tls/i,
+                            advice: 'Use HTTPS for all external API calls and data transmission'
+                        }
+                    ]
+                },
+                {
+                    category: 'Testing',
+                    icon: '🧪',
+                    items: [
+                        {
+                            name: 'Test Functions',
+                            test: /describe\(|test\(|it\(|expect\(/i,
+                            advice: 'Write unit tests for your functions using a testing framework'
+                        },
+                        {
+                            name: 'Edge Cases',
+                            test: /null|undefined|empty|zero|negative/i,
+                            advice: 'Test edge cases like null, undefined, empty strings, and boundary values'
+                        }
+                    ]
+                },
+                {
+                    category: 'Performance',
+                    icon: '⚡',
+                    items: [
+                        {
+                            name: 'Caching',
+                            test: /cache|memoize|localStorage|sessionStorage/i,
+                            advice: 'Implement caching to reduce redundant API calls and computations'
+                        },
+                        {
+                            name: 'Debouncing/Throttling',
+                            test: /debounce|throttle|setTimeout.*clear/i,
+                            advice: 'Use debouncing or throttling for frequent events like scrolling or typing'
+                        },
+                        {
+                            name: 'Async/Await',
+                            test: /async\s+function|await\s+/i,
+                            advice: 'Use async/await for better asynchronous code readability and error handling'
+                        }
+                    ]
+                },
+                {
+                    category: 'Code Quality',
+                    icon: '✨',
+                    items: [
+                        {
+                            name: 'Comments & Documentation',
+                            test: /\/\*\*|\/\/.*@param|\/\/.*@returns/i,
+                            advice: 'Add JSDoc comments or clear documentation for complex functions'
+                        },
+                        {
+                            name: 'Constants',
+                            test: /const\s+[A-Z_]+\s*=/,
+                            advice: 'Extract magic numbers and strings into named constants'
+                        },
+                        {
+                            name: 'Logging',
+                            test: /console\.log|logger\.|log\(/i,
+                            advice: 'Replace console.log with proper logging (but this one passes if found!)',
+                            invert: false
+                        }
+                    ]
+                },
+                {
+                    category: 'Production Ready',
+                    icon: '🎯',
+                    items: [
+                        {
+                            name: 'Environment Variables',
+                            test: /process\.env|import\.meta\.env|config\./i,
+                            advice: 'Use environment variables for API keys and configuration'
+                        },
+                        {
+                            name: 'Loading States',
+                            test: /loading|isLoading|pending|spinner/i,
+                            advice: 'Show loading states during async operations for better UX'
+                        },
+                        {
+                            name: 'Rate Limiting',
+                            test: /rateLimit|throttle|quota|limit/i,
+                            advice: 'Implement rate limiting to prevent API abuse'
+                        }
+                    ]
+                }
+            ];
+
+            let totalChecks = 0;
+            let passedChecks = 0;
+            let failedChecks = 0;
+            let warnings = 0;
+
+            let html = '';
+
+            checks.forEach(section => {
+                html += `<div class="checklist-section">`;
+                html += `<h3>${section.icon} ${section.category}</h3>`;
+
+                section.items.forEach(item => {
+                    const passed = section.test ? item.test.test(code) : false;
+                    totalChecks++;
+
+                    if (passed) {
+                        passedChecks++;
+                    } else {
+                        failedChecks++;
+                    }
+
+                    const status = passed ? 'pass' : 'fail';
+                    const icon = passed ? '✅' : '❌';
+
+                    html += `
+                        <div class="checklist-item ${status}">
+                            <div class="item-header">
+                                <span class="status-icon">${icon}</span>
+                                <span class="item-title">${item.name}</span>
+                            </div>
+                            ${!passed ? `<div class="item-description">${item.advice}</div>` : ''}
+                        </div>
+                    `;
+                });
+
+                html += `</div>`;
+            });
+
+            const score = Math.round((passedChecks / totalChecks) * 100);
+            let scoreClass = 'score-low';
+            let scoreEmoji = '😰';
+            let scoreText = 'Needs Work';
+
+            if (score >= 80) {
+                scoreClass = 'score-high';
+                scoreEmoji = '🎉';
+                scoreText = 'Production Ready!';
+            } else if (score >= 50) {
+                scoreClass = 'score-medium';
+                scoreEmoji = '⚠️';
+                scoreText = 'Getting There';
+            }
+
+            const resultsHTML = `
+                <div class="score-display ${scoreClass}">
+                    <div class="score-number">${score}%</div>
+                    <div class="score-label">${scoreEmoji} ${scoreText}</div>
+                    <div class="stats">
+                        <div class="stat">
+                            <div class="stat-number">${passedChecks}</div>
+                            <div class="stat-label">Passed</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-number">${failedChecks}</div>
+                            <div class="stat-label">Failed</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-number">${totalChecks}</div>
+                            <div class="stat-label">Total</div>
+                        </div>
+                    </div>
+                </div>
+                ${html}
+            `;
+
+            document.getElementById('results').innerHTML = resultsHTML;
+        }
+
+        // Example code for demo
+        window.addEventListener('load', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('demo') === 'true') {
+                document.getElementById('codeInput').value = `function fetchUserData() {
+    const response = fetch('/api/users');
+    return response.json();
+}
+
+function submitForm(data) {
+    fetch('/api/submit', {
+        method: 'POST',
+        body: JSON.stringify(data)
+    });
+}`;
+            }
+        });
+    </script>
+</body>
+</html>
