@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Council Simulator</title>
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --card-bg: #13131a;
+            --border: #2a2a3a;
+            --text: #e4e4eb;
+            --text-muted: #8888a0;
+            --claude: #d97706;
+            --gpt: #10b981;
+            --gemini: #3b82f6;
+            --synthesis: #a855f7;
+            --agree: #22c55e;
+            --disagree: #ef4444;
+            --partial: #f59e0b;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 1.5rem;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--claude), var(--synthesis), var(--gemini));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+        
+        .trend-badge {
+            display: inline-block;
+            background: rgba(168, 85, 247, 0.15);
+            color: var(--synthesis);
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-top: 0.75rem;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+        }
+        
+        .input-section {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .input-wrapper {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        #query-input {
+            flex: 1;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            color: var(--text);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        
+        #query-input:focus {
+            border-color: var(--synthesis);
+        }
+        
+        #query-input::placeholder {
+            color: var(--text-muted);
+        }
+        
+        button {
+            background: linear-gradient(135deg, var(--claude), var(--synthesis));
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .models-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        @media (max-width: 900px) {
+            .models-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .model-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: border-color 0.3s;
+        }
+        
+        .model-card.active {
+            border-color: var(--border);
+        }
+        
+        .model-card[data-model="claude"].active {
+            border-color: var(--claude);
+        }
+        
+        .model-card[data-model="gpt"].active {
+            border-color: var(--gpt);
+        }
+        
+        .model-card[data-model="gemini"].active {
+            border-color: var(--gemini);
+        }
+        
+        .model-header {
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .model-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        
+        .model-card[data-model="claude"] .model-icon {
+            background: rgba(217, 119, 6, 0.2);
+        }
+        
+        .model-card[data-model="gpt"] .model-icon {
+            background: rgba(16, 185, 129, 0.2);
+        }
+        
+        .model-card[data-model="gemini"] .model-icon {
+            background: rgba(59, 130, 246, 0.2);
+        }
+        
+        .model-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        
+        .model-card[data-model="claude"] .model-name {
+            color: var(--claude);
+        }
+        
+        .model-card[data-model="gpt"] .model-name {
+            color: var(--gpt);
+        }
+        
+        .model-card[data-model="gemini"] .model-name {
+            color: var(--gemini);
+        }
+        
+        .model-status {
+            margin-left: auto;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        
+        .model-status.thinking {
+            color: var(--synthesis);
+        }
+        
+        .model-content {
+            padding: 1.25rem;
+            min-height: 180px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text-muted);
+        }
+        
+        .model-content.has-response {
+            color: var(--text);
+        }
+        
+        .cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1em;
+            background: var(--synthesis);
+            animation: blink 1s infinite;
+            vertical-align: text-bottom;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        
+        .synthesis-section {
+            background: var(--card-bg);
+            border: 2px solid var(--synthesis);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        
+        .synthesis-header {
+            padding: 1rem 1.25rem;
+            background: rgba(168, 85, 247, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .synthesis-icon {
+            font-size: 1.5rem;
+        }
+        
+        .synthesis-title {
+            font-weight: 600;
+            color: var(--synthesis);
+        }
+        
+        .synthesis-content {
+            padding: 1.25rem;
+        }
+        
+        .consensus-bar {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .consensus-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.3rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .consensus-item.agree {
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--agree);
+        }
+        
+        .consensus-item.partial {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--partial);
+        }
+        
+        .consensus-item.disagree {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--disagree);
+        }
+        
+        .synthesis-text {
+            font-size: 0.95rem;
+            line-height: 1.7;
+            color: var(--text);
+        }
+        
+        .synthesis-text .highlight {
+            background: rgba(168, 85, 247, 0.2);
+            padding: 0.1rem 0.3rem;
+            border-radius: 4px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 2rem;
+        }
+        
+        .examples {
+            margin-top: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+        
+        .example-btn {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .example-btn:hover {
+            border-color: var(--synthesis);
+            color: var(--text);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+        
+        footer a {
+            color: var(--synthesis);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚖️ Model Council Simulator</h1>
+            <p class="subtitle">Run your query through multiple AI models and see the synthesized consensus</p>
+            <div class="trend-badge">📈 Inspired by Perplexity's Model Council (Feb 2026)</div>
+        </header>
+        
+        <div class="input-section">
+            <div class="input-wrapper">
+                <input type="text" id="query-input" placeholder="Ask anything... e.g., 'What is the best programming language for AI?'">
+                <button id="submit-btn" onclick="runCouncil()">🗳️ Convene Council</button>
+            </div>
+            <div class="examples">
+                <button class="example-btn" onclick="setExample('What is the best programming language for AI development?')">Best AI language?</button>
+                <button class="example-btn" onclick="setExample('Will AI replace software developers?')">AI replace devs?</button>
+                <button class="example-btn" onclick="setExample('Is prompt engineering a real skill?')">Prompt engineering?</button>
+                <button class="example-btn" onclick="setExample('Should I use Claude, GPT, or Gemini for coding?')">Which model for coding?</button>
+            </div>
+        </div>
+        
+        <div class="models-grid">
+            <div class="model-card" data-model="claude">
+                <div class="model-header">
+                    <div class="model-icon">🟠</div>
+                    <span class="model-name">Claude Opus 4.6</span>
+                    <span class="model-status" id="claude-status">Ready</span>
+                </div>
+                <div class="model-content" id="claude-content">
+                    <span class="empty-text">Waiting for query...</span>
+                </div>
+            </div>
+            
+            <div class="model-card" data-model="gpt">
+                <div class="model-header">
+                    <div class="model-icon">🟢</div>
+                    <span class="model-name">GPT-5.2</span>
+                    <span class="model-status" id="gpt-status">Ready</span>
+                </div>
+                <div class="model-content" id="gpt-content">
+                    <span class="empty-text">Waiting for query...</span>
+                </div>
+            </div>
+            
+            <div class="model-card" data-model="gemini">
+                <div class="model-header">
+                    <div class="model-icon">🔵</div>
+                    <span class="model-name">Gemini 3.0 Pro</span>
+                    <span class="model-status" id="gemini-status">Ready</span>
+                </div>
+                <div class="model-content" id="gemini-content">
+                    <span class="empty-text">Waiting for query...</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="synthesis-section">
+            <div class="synthesis-header">
+                <span class="synthesis-icon">🧬</span>
+                <span class="synthesis-title">Synthesized Consensus</span>
+            </div>
+            <div class="synthesis-content" id="synthesis-content">
+                <div class="empty-state">
+                    <p>The council will deliberate once you submit a query.</p>
+                    <p style="margin-top: 0.5rem; font-size: 0.85rem;">Three models will reason independently, then a synthesis will highlight areas of agreement and divergence.</p>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Built from the <a href="https://x.com/perplexity_ai/status/2019444886114824219">Perplexity Model Council</a> trend • <a href="https://github.com/samilamqaddam-lab/ai-trend-apps">AI Trend Apps</a></p>
+        </footer>
+    </div>
+    
+    <script>
+        const responses = {
+            'programming language': {
+                claude: "Python remains the most practical choice for AI development in 2026. Its ecosystem (PyTorch, JAX, Transformers) is unmatched, and the language's readability accelerates prototyping. However, for production inference, Rust and Mojo are gaining significant traction due to their performance characteristics. The real answer depends on your use case: research favors Python, production increasingly favors compiled languages.",
+                gpt: "I'd recommend Python as your primary language—it's still the lingua franca of AI with the best library support. That said, the landscape is shifting: Mojo promises Python syntax with C++ speed, and TypeScript is surprisingly capable for AI applications via transformers.js. For pure performance, consider learning Rust alongside Python. The trend is toward polyglot approaches.",
+                gemini: "Python is definitively the best choice for AI development, supported by extensive libraries and community resources. While alternatives like Julia offer performance benefits, Python's ecosystem dominance makes it the clear winner. I'd suggest focusing 80% on Python and exploring Mojo for compute-intensive work. The industry standard won't shift significantly in the next 2-3 years.",
+                consensus: { agree: 85, partial: 10, disagree: 5 },
+                synthesis: "All three models <span class='highlight'>strongly agree</span> that Python remains the primary language for AI development due to its ecosystem advantages. They reach <span class='highlight'>partial consensus</span> on Mojo as an emerging alternative for performance-critical applications. The main divergence: Gemini is more definitive about Python's dominance, while Claude and GPT acknowledge a more nuanced polyglot future."
+            },
+            'replace developers': {
+                claude: "AI won't replace developers—it will reshape what development means. The role is evolving from 'writing code' to 'directing AI systems.' Junior-level tasks are being automated, but the need for architectural thinking, system design, and AI orchestration is growing. Developers who adapt will be more productive than ever; those who resist may struggle. It's transformation, not replacement.",
+                gpt: "Replacement is unlikely; augmentation is certain. Current AI excels at code generation but struggles with complex system design, debugging nuanced issues, and understanding business context. I see a future where developers become 'AI wranglers'—directing multiple AI agents while focusing on high-level decisions. The job title might change, but the role remains essential.",
+                gemini: "AI will significantly automate coding tasks but won't fully replace developers in the foreseeable future. Software development involves creativity, stakeholder communication, and ethical judgment that AI lacks. However, fewer developers may be needed for the same output. The profession will evolve toward more supervisory and architectural roles, with AI handling implementation details.",
+                consensus: { agree: 75, partial: 20, disagree: 5 },
+                synthesis: "Strong consensus: AI will <span class='highlight'>transform rather than replace</span> developers. All models agree on the shift toward architectural and supervisory roles. <span class='highlight'>Partial agreement</span> exists on the timeline and extent of automation. Key divergence: Gemini suggests fewer developers may be needed overall, while Claude and GPT emphasize new opportunities outweighing displaced roles."
+            },
+            'prompt engineering': {
+                claude: "Prompt engineering is a legitimate transitional skill, but its shelf life is uncertain. As models become more capable and develop better intent understanding, explicit prompting may become less critical. That said, understanding how to communicate effectively with AI systems—structuring requests, providing context, iterating—will remain valuable even as the specific techniques evolve.",
+                gpt: "Yes, prompt engineering is a real skill, but it's better understood as 'AI communication.' The fundamentals—clear instruction, context setting, output formatting—transfer across models and will remain relevant. However, I'd caution against over-specialization: the specific tricks that work today may not work tomorrow. Focus on understanding model behavior rather than memorizing prompts.",
+                gemini: "Prompt engineering is currently valuable but may be overhyped as a long-term career. Models are rapidly improving at understanding natural language instructions without specialized prompting. I'd recommend learning it as one skill among many rather than a primary specialty. The underlying principle—effective human-AI communication—will persist even as specific techniques become obsolete.",
+                consensus: { agree: 70, partial: 25, disagree: 5 },
+                synthesis: "The council reaches <span class='highlight'>consensus</span> that prompt engineering is valuable now but with caveats about longevity. All models emphasize underlying communication skills over specific techniques. <span class='highlight'>Partial agreement</span> on whether it deserves 'career' status—Gemini is most skeptical, Claude most balanced. Key insight: focus on principles rather than tricks."
+            },
+            'claude gpt gemini coding': {
+                claude: "For coding specifically, I'd honestly recommend evaluating based on your workflow. Claude excels at longer contexts and nuanced instruction-following. GPT-5.2 has strong code completion and multi-file understanding. Gemini integrates well with Google's ecosystem. There's no universal 'best'—try all three on your actual use cases. The differences are often marginal for standard tasks.",
+                gpt: "Each model has strengths: I'm particularly good at rapid code generation and explaining concepts, Claude handles complex multi-file refactoring well, and Gemini excels when you're in Google's ecosystem. For pure coding productivity, Claude and I are roughly comparable in 2026. I'd suggest using whichever integrates best with your IDE and workflow rather than chasing benchmarks.",
+                gemini: "For coding tasks, I'd recommend GPT-5.2 or Claude Opus 4.6 over Gemini for most use cases—they have stronger code-specific training. Gemini's advantages are in multimodal tasks and Google Cloud integration. If you're building on GCP, Gemini makes sense; otherwise, evaluate Claude and GPT based on your specific language and framework needs.",
+                consensus: { agree: 60, partial: 30, disagree: 10 },
+                synthesis: "Interestingly, <span class='highlight'>each model shows some humility</span> about its own capabilities. There's consensus that workflow integration matters more than raw benchmarks. <span class='highlight'>Notable divergence</span>: Gemini explicitly recommends competitors for pure coding, while Claude and GPT emphasize use-case specificity. The council suggests trying all three on real tasks rather than relying on comparisons."
+            },
+            'default': {
+                claude: "This is an interesting question that requires considering multiple perspectives. Based on current evidence and reasoning, I'd suggest approaching it by first understanding the core tradeoffs involved, then evaluating against your specific context and goals. The answer isn't universal—it depends on factors unique to your situation.",
+                gpt: "Great question! Let me break this down systematically. There are several key factors to consider, and different approaches work better for different contexts. I'd recommend starting with your primary constraints, then exploring options that optimize for your most important criteria. Would you like me to elaborate on any specific aspect?",
+                gemini: "This question touches on several important considerations. From my analysis, the optimal approach depends on balancing competing priorities. I'd suggest defining your success criteria first, then evaluating options against those criteria. There's often no single right answer, but there are better and worse approaches for specific situations.",
+                consensus: { agree: 65, partial: 25, disagree: 10 },
+                synthesis: "The council reaches <span class='highlight'>general agreement</span> on the need to consider context and specific factors. All models emphasize <span class='highlight'>avoiding universal answers</span> in favor of situation-specific analysis. Minor divergences exist in communication style and suggested frameworks, but the core reasoning aligns."
+            }
+        };
+        
+        function setExample(text) {
+            document.getElementById('query-input').value = text;
+            document.getElementById('query-input').focus();
+        }
+        
+        function getResponseKey(query) {
+            query = query.toLowerCase();
+            if (query.includes('language') || query.includes('python') || query.includes('programming')) {
+                return 'programming language';
+            }
+            if (query.includes('replace') || query.includes('developer') || query.includes('job')) {
+                return 'replace developers';
+            }
+            if (query.includes('prompt') || query.includes('engineering')) {
+                return 'prompt engineering';
+            }
+            if ((query.includes('claude') || query.includes('gpt') || query.includes('gemini')) && query.includes('cod')) {
+                return 'claude gpt gemini coding';
+            }
+            return 'default';
+        }
+        
+        async function typeText(element, text, speed = 20) {
+            element.innerHTML = '';
+            element.classList.add('has-response');
+            for (let i = 0; i < text.length; i++) {
+                element.innerHTML = text.substring(0, i + 1) + '<span class="cursor"></span>';
+                await new Promise(r => setTimeout(r, speed + Math.random() * 15));
+            }
+            element.innerHTML = text;
+        }
+        
+        async function runCouncil() {
+            const query = document.getElementById('query-input').value.trim();
+            if (!query) return;
+            
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true;
+            btn.textContent = '🔄 Deliberating...';
+            
+            const responseKey = getResponseKey(query);
+            const data = responses[responseKey];
+            
+            // Activate cards
+            document.querySelectorAll('.model-card').forEach(card => card.classList.add('active'));
+            
+            // Update statuses
+            document.getElementById('claude-status').textContent = 'Thinking...';
+            document.getElementById('claude-status').classList.add('thinking');
+            document.getElementById('gpt-status').textContent = 'Thinking...';
+            document.getElementById('gpt-status').classList.add('thinking');
+            document.getElementById('gemini-status').textContent = 'Thinking...';
+            document.getElementById('gemini-status').classList.add('thinking');
+            
+            // Clear synthesis
+            document.getElementById('synthesis-content').innerHTML = '<div class="empty-state"><p>⏳ Waiting for all models to respond...</p></div>';
+            
+            // Simulate staggered responses
+            await new Promise(r => setTimeout(r, 500));
+            
+            // Claude responds first
+            document.getElementById('claude-status').textContent = 'Responding';
+            await typeText(document.getElementById('claude-content'), data.claude);
+            document.getElementById('claude-status').textContent = '✓ Done';
+            document.getElementById('claude-status').classList.remove('thinking');
+            
+            await new Promise(r => setTimeout(r, 300));
+            
+            // GPT responds
+            document.getElementById('gpt-status').textContent = 'Responding';
+            await typeText(document.getElementById('gpt-content'), data.gpt);
+            document.getElementById('gpt-status').textContent = '✓ Done';
+            document.getElementById('gpt-status').classList.remove('thinking');
+            
+            await new Promise(r => setTimeout(r, 300));
+            
+            // Gemini responds
+            document.getElementById('gemini-status').textContent = 'Responding';
+            await typeText(document.getElementById('gemini-content'), data.gemini);
+            document.getElementById('gemini-status').textContent = '✓ Done';
+            document.getElementById('gemini-status').classList.remove('thinking');
+            
+            // Synthesis
+            await new Promise(r => setTimeout(r, 500));
+            
+            const consensusHTML = `
+                <div class="consensus-bar">
+                    <div class="consensus-item agree">✓ Agree: ${data.consensus.agree}%</div>
+                    <div class="consensus-item partial">◐ Partial: ${data.consensus.partial}%</div>
+                    <div class="consensus-item disagree">✗ Diverge: ${data.consensus.disagree}%</div>
+                </div>
+                <div class="synthesis-text">${data.synthesis}</div>
+            `;
+            
+            document.getElementById('synthesis-content').innerHTML = consensusHTML;
+            
+            btn.disabled = false;
+            btn.textContent = '🗳️ Convene Council';
+        }
+        
+        // Enter key support
+        document.getElementById('query-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') runCouncil();
+        });
+    </script>
+</body>
+</html>
