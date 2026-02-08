@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧠 Memory Vault — Local-First Personal Memory</title>
+    <style>
+        :root {
+            --bg: #0f0f1a;
+            --card-bg: #1a1a2e;
+            --border: #2d2d4a;
+            --text: #e0e0ff;
+            --text-muted: #8888aa;
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --green: #10b981;
+            --purple: #a855f7;
+            --pink: #ec4899;
+            --warning: #f59e0b;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--accent), var(--purple), var(--pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+        
+        .trend-banner {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(168, 85, 247, 0.15));
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        
+        .trend-banner strong {
+            color: var(--accent);
+        }
+        
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--green);
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .input-section {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .input-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            color: var(--accent);
+        }
+        
+        .memory-input {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            color: var(--text);
+            font-size: 1rem;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 100px;
+            margin-bottom: 1rem;
+        }
+        
+        .memory-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        
+        .memory-input::placeholder {
+            color: var(--text-muted);
+        }
+        
+        .tags-input {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .tag-input {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            color: var(--text);
+            font-size: 0.9rem;
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .tag-input:focus {
+            outline: none;
+            border-color: var(--purple);
+        }
+        
+        .quick-tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .quick-tag {
+            background: rgba(168, 85, 247, 0.2);
+            border: 1px solid var(--purple);
+            color: var(--purple);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .quick-tag:hover {
+            background: var(--purple);
+            color: white;
+        }
+        
+        .button-row {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), var(--purple));
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+        
+        .btn-secondary {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+        }
+        
+        .btn-secondary:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        
+        .search-section {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .search-input {
+            flex: 1;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            color: var(--text);
+            font-size: 1rem;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        
+        .filter-select {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            color: var(--text);
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        
+        .memories-section {
+            margin-bottom: 2rem;
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        
+        .section-title {
+            font-size: 1.2rem;
+            color: var(--text);
+        }
+        
+        .memory-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .memory-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            position: relative;
+            transition: all 0.2s;
+        }
+        
+        .memory-card:hover {
+            border-color: var(--accent);
+            transform: translateX(4px);
+        }
+        
+        .memory-content {
+            font-size: 1rem;
+            line-height: 1.7;
+            margin-bottom: 0.75rem;
+            white-space: pre-wrap;
+        }
+        
+        .memory-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .memory-tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .memory-tag {
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--accent);
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+        }
+        
+        .memory-time {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+        
+        .memory-actions {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .memory-card:hover .memory-actions {
+            opacity: 1;
+        }
+        
+        .action-btn {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+        
+        .action-btn:hover {
+            border-color: var(--pink);
+            color: var(--pink);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
+        
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .local-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid var(--green);
+            color: var(--green);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-top: 1rem;
+        }
+        
+        .pulse {
+            width: 8px;
+            height: 8px;
+            background: var(--green);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        footer {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            padding: 2rem 0;
+            border-top: 1px solid var(--border);
+        }
+        
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        
+        @media (max-width: 600px) {
+            .stats-bar {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .search-section {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧠 Memory Vault</h1>
+            <p class="subtitle">Your thoughts. Your device. No cloud required.</p>
+            <div class="local-badge">
+                <span class="pulse"></span>
+                100% Local — Never leaves your browser
+            </div>
+        </header>
+        
+        <div class="trend-banner">
+            📈 <strong>Trending:</strong> LocalGPT hit HN front page with 166 points — local-first AI with persistent memory is the hot new paradigm. Your data stays on YOUR device.
+        </div>
+        
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="stat-value" id="total-memories">0</div>
+                <div class="stat-label">Memories</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="total-tags">0</div>
+                <div class="stat-label">Tags</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="total-words">0</div>
+                <div class="stat-label">Words</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="storage-used">0 KB</div>
+                <div class="stat-label">Local Storage</div>
+            </div>
+        </div>
+        
+        <div class="input-section">
+            <div class="input-header">
+                ✨ New Memory
+            </div>
+            <textarea 
+                class="memory-input" 
+                id="memory-text" 
+                placeholder="What do you want to remember? Ideas, notes, thoughts, learnings..."
+            ></textarea>
+            <div class="tags-input">
+                <input 
+                    type="text" 
+                    class="tag-input" 
+                    id="tag-input" 
+                    placeholder="Add tags (comma separated)"
+                >
+                <div class="quick-tags">
+                    <span class="quick-tag" data-tag="idea">💡 idea</span>
+                    <span class="quick-tag" data-tag="todo">📋 todo</span>
+                    <span class="quick-tag" data-tag="learning">📚 learning</span>
+                    <span class="quick-tag" data-tag="quote">💬 quote</span>
+                </div>
+            </div>
+            <div class="button-row">
+                <button class="btn btn-primary" id="save-btn">💾 Save to Vault</button>
+                <button class="btn btn-secondary" id="clear-btn">Clear</button>
+            </div>
+        </div>
+        
+        <div class="search-section">
+            <input 
+                type="text" 
+                class="search-input" 
+                id="search-input" 
+                placeholder="🔍 Search your memories..."
+            >
+            <select class="filter-select" id="tag-filter">
+                <option value="">All Tags</option>
+            </select>
+        </div>
+        
+        <div class="memories-section">
+            <div class="section-header">
+                <h2 class="section-title">📁 Your Memories</h2>
+            </div>
+            <div class="memory-list" id="memory-list">
+                <div class="empty-state">
+                    <div class="empty-state-icon">🧠</div>
+                    <p>No memories yet. Start building your personal knowledge vault!</p>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Built from <a href="https://news.ycombinator.com/item?id=46930391" target="_blank">LocalGPT trend</a> — Local-first AI with persistent memory</p>
+            <p style="margin-top: 0.5rem;">Part of <a href="../index.html">AI Trend Apps</a> • Powered by OpenClaw 🦞</p>
+        </footer>
+    </div>
+    
+    <script>
+        // Memory Vault - Local-First Storage
+        const STORAGE_KEY = 'memory-vault-data';
+        
+        // Load memories from localStorage
+        function loadMemories() {
+            const data = localStorage.getItem(STORAGE_KEY);
+            return data ? JSON.parse(data) : [];
+        }
+        
+        // Save memories to localStorage
+        function saveMemories(memories) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(memories));
+        }
+        
+        // Get all unique tags
+        function getAllTags(memories) {
+            const tags = new Set();
+            memories.forEach(m => m.tags.forEach(t => tags.add(t)));
+            return Array.from(tags).sort();
+        }
+        
+        // Calculate total words
+        function getTotalWords(memories) {
+            return memories.reduce((sum, m) => sum + m.content.split(/\s+/).filter(w => w).length, 0);
+        }
+        
+        // Get storage size
+        function getStorageSize() {
+            const data = localStorage.getItem(STORAGE_KEY) || '';
+            const bytes = new Blob([data]).size;
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+        
+        // Update stats display
+        function updateStats() {
+            const memories = loadMemories();
+            document.getElementById('total-memories').textContent = memories.length;
+            document.getElementById('total-tags').textContent = getAllTags(memories).length;
+            document.getElementById('total-words').textContent = getTotalWords(memories).toLocaleString();
+            document.getElementById('storage-used').textContent = getStorageSize();
+        }
+        
+        // Update tag filter dropdown
+        function updateTagFilter() {
+            const memories = loadMemories();
+            const tags = getAllTags(memories);
+            const filter = document.getElementById('tag-filter');
+            filter.innerHTML = '<option value="">All Tags</option>' +
+                tags.map(t => `<option value="${t}">${t}</option>`).join('');
+        }
+        
+        // Format relative time
+        function formatTime(timestamp) {
+            const diff = Date.now() - timestamp;
+            const mins = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+            
+            if (mins < 1) return 'just now';
+            if (mins < 60) return `${mins}m ago`;
+            if (hours < 24) return `${hours}h ago`;
+            if (days < 7) return `${days}d ago`;
+            return new Date(timestamp).toLocaleDateString();
+        }
+        
+        // Render memory list
+        function renderMemories(filter = '', tagFilter = '') {
+            const memories = loadMemories();
+            const list = document.getElementById('memory-list');
+            
+            let filtered = memories;
+            if (filter) {
+                const query = filter.toLowerCase();
+                filtered = filtered.filter(m => 
+                    m.content.toLowerCase().includes(query) ||
+                    m.tags.some(t => t.toLowerCase().includes(query))
+                );
+            }
+            if (tagFilter) {
+                filtered = filtered.filter(m => m.tags.includes(tagFilter));
+            }
+            
+            // Sort by newest first
+            filtered.sort((a, b) => b.timestamp - a.timestamp);
+            
+            if (filtered.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">${filter || tagFilter ? '🔍' : '🧠'}</div>
+                        <p>${filter || tagFilter ? 'No memories match your search.' : 'No memories yet. Start building your personal knowledge vault!'}</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            list.innerHTML = filtered.map(m => `
+                <div class="memory-card" data-id="${m.id}">
+                    <div class="memory-actions">
+                        <button class="action-btn delete-btn" title="Delete">🗑️</button>
+                    </div>
+                    <div class="memory-content">${escapeHtml(m.content)}</div>
+                    <div class="memory-meta">
+                        <div class="memory-tags">
+                            ${m.tags.map(t => `<span class="memory-tag">${t}</span>`).join('')}
+                        </div>
+                        <span class="memory-time">${formatTime(m.timestamp)}</span>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Add delete handlers
+            list.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const card = e.target.closest('.memory-card');
+                    const id = parseInt(card.dataset.id);
+                    deleteMemory(id);
+                });
+            });
+        }
+        
+        // Escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Add new memory
+        function addMemory(content, tags) {
+            const memories = loadMemories();
+            const newMemory = {
+                id: Date.now(),
+                content: content.trim(),
+                tags: tags.filter(t => t.trim()).map(t => t.trim().toLowerCase()),
+                timestamp: Date.now()
+            };
+            memories.push(newMemory);
+            saveMemories(memories);
+            updateStats();
+            updateTagFilter();
+            renderMemories();
+        }
+        
+        // Delete memory
+        function deleteMemory(id) {
+            let memories = loadMemories();
+            memories = memories.filter(m => m.id !== id);
+            saveMemories(memories);
+            updateStats();
+            updateTagFilter();
+            renderMemories(
+                document.getElementById('search-input').value,
+                document.getElementById('tag-filter').value
+            );
+        }
+        
+        // Event listeners
+        document.getElementById('save-btn').addEventListener('click', () => {
+            const content = document.getElementById('memory-text').value;
+            const tagInput = document.getElementById('tag-input').value;
+            const tags = tagInput.split(',').map(t => t.trim()).filter(t => t);
+            
+            if (!content.trim()) {
+                alert('Please enter some content for your memory.');
+                return;
+            }
+            
+            addMemory(content, tags);
+            document.getElementById('memory-text').value = '';
+            document.getElementById('tag-input').value = '';
+        });
+        
+        document.getElementById('clear-btn').addEventListener('click', () => {
+            document.getElementById('memory-text').value = '';
+            document.getElementById('tag-input').value = '';
+        });
+        
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            renderMemories(e.target.value, document.getElementById('tag-filter').value);
+        });
+        
+        document.getElementById('tag-filter').addEventListener('change', (e) => {
+            renderMemories(document.getElementById('search-input').value, e.target.value);
+        });
+        
+        // Quick tag buttons
+        document.querySelectorAll('.quick-tag').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tag = btn.dataset.tag;
+                const input = document.getElementById('tag-input');
+                const current = input.value.trim();
+                input.value = current ? `${current}, ${tag}` : tag;
+            });
+        });
+        
+        // Keyboard shortcuts
+        document.getElementById('memory-text').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                document.getElementById('save-btn').click();
+            }
+        });
+        
+        // Initialize
+        updateStats();
+        updateTagFilter();
+        renderMemories();
+        
+        // Add some sample memories if empty
+        if (loadMemories().length === 0) {
+            const samples = [
+                {
+                    content: "Local-first means your data stays on YOUR device. No server, no cloud, no tracking. Just you and your thoughts.",
+                    tags: ["philosophy", "privacy"]
+                },
+                {
+                    content: "The brain forgets, but Memory Vault doesn't. Build your second brain right here in your browser.",
+                    tags: ["idea", "productivity"]
+                },
+                {
+                    content: "Inspired by LocalGPT — proving that AI assistants don't need to phone home. Privacy-first is the future.",
+                    tags: ["ai", "trend", "learning"]
+                }
+            ];
+            samples.forEach(s => addMemory(s.content, s.tags));
+        }
+    </script>
+</body>
+</html>
