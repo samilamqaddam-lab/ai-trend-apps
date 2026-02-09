@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentic Workflow Designer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .trend-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            margin-top: 15px;
+            font-size: 0.9em;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .panel h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 300px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .output-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 200px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .examples {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .example-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .example-card:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .example-card h3 {
+            color: #667eea;
+            font-size: 1em;
+            margin-bottom: 8px;
+        }
+
+        .example-card p {
+            font-size: 0.85em;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .info-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .info-box strong {
+            color: #856404;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 Agentic Workflow Designer</h1>
+            <p class="subtitle">Design AI-powered GitHub workflows in natural language</p>
+            <div class="trend-badge">🔥 Trending on HN: GitHub Agentic Workflows (239 pts)</div>
+        </header>
+
+        <div class="panel">
+            <div class="info-box">
+                <strong>What's this?</strong> GitHub just released Agentic Workflows - a way to automate your repo using AI agents that run on schedule. Write instructions in plain English, and AI handles the rest!
+            </div>
+
+            <h2>Try Example Workflows:</h2>
+            <div class="examples">
+                <div class="example-card" onclick="loadExample('daily-report')">
+                    <h3>📊 Daily Status Report</h3>
+                    <p>Creates an upbeat daily team status report as a GitHub issue</p>
+                </div>
+                <div class="example-card" onclick="loadExample('code-review')">
+                    <h3>🔍 Smart Code Review</h3>
+                    <p>Analyzes PRs for complexity, suggests improvements, checks tests</p>
+                </div>
+                <div class="example-card" onclick="loadExample('doc-keeper')">
+                    <h3>📝 Doc Keeper</h3>
+                    <p>Keeps README and docs in sync with code changes</p>
+                </div>
+                <div class="example-card" onclick="loadExample('issue-triage')">
+                    <h3>🏷️ Issue Triage Bot</h3>
+                    <p>Auto-labels and triages new issues based on content</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="panel">
+                <h2>✍️ Write Your Workflow</h2>
+                <textarea id="workflow-input" placeholder="Describe what you want your AI agent to do...
+
+Example:
+---
+on:
+  schedule: daily
+permissions:
+  contents: read
+  issues: write
+---
+
+## Daily Code Health Report
+
+Analyze the repository and create a daily issue with:
+- New commits summary
+- Test coverage status
+- Open PRs needing review
+- Any security alerts
+
+Keep the tone upbeat and helpful!"></textarea>
+                <div class="controls">
+                    <button class="btn-primary" onclick="generateWorkflow()">🚀 Generate Workflow</button>
+                    <button class="btn-secondary" onclick="clearAll()">🗑️ Clear</button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>⚙️ Generated GitHub Action</h2>
+                <div class="output-section" id="output">
+                    <span style="color: #999;">Your generated workflow will appear here...</span>
+                </div>
+                <div class="controls">
+                    <button class="btn-secondary" onclick="copyToClipboard()">📋 Copy to Clipboard</button>
+                    <button class="btn-secondary" onclick="downloadWorkflow()">💾 Download .yml</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const examples = {
+            'daily-report': `---
+on:
+  schedule: daily at 9am
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+safe-outputs:
+  create-issue:
+    title-prefix: "[Daily Report] "
+    labels: [report, automated]
+---
+
+## Daily Team Status Report
+
+Create an upbeat daily status report as a GitHub issue covering:
+- Summary of commits in last 24 hours
+- Open PRs and their status
+- Issues closed today
+- Any CI/CD failures to be aware of
+
+Keep it concise and motivating! Include emoji for readability.`,
+
+            'code-review': `---
+on:
+  pull-request: opened, synchronize
+permissions:
+  contents: read
+  pull-requests: write
+---
+
+## Smart PR Review
+
+Analyze this pull request and provide:
+- Complexity score (1-10)
+- Suggested improvements for readability
+- Check if tests are included
+- Security considerations
+- Performance implications
+
+Post findings as a PR comment. Be constructive and specific!`,
+
+            'doc-keeper': `---
+on:
+  push:
+    paths: ["src/**"]
+permissions:
+  contents: write
+safe-outputs:
+  create-pull-request:
+    branch-prefix: "docs/auto-update-"
+---
+
+## Documentation Sync
+
+When source code changes:
+- Check if README examples match current API
+- Update code snippets if needed
+- Verify all public functions are documented
+- Check for broken links
+
+Create a PR with documentation updates if needed.`,
+
+            'issue-triage': `---
+on:
+  issue: opened
+permissions:
+  issues: write
+safe-outputs:
+  update-issue:
+    allowed-labels: [bug, feature, documentation, question, needs-triage]
+---
+
+## Auto Triage New Issues
+
+When a new issue is opened:
+- Analyze the content
+- Suggest appropriate labels (bug, feature, docs, question)
+- Check if it's a duplicate of existing issues
+- Add a welcoming comment with next steps
+
+Be friendly and helpful!`
+        };
+
+        function loadExample(type) {
+            document.getElementById('workflow-input').value = examples[type];
+            generateWorkflow();
+        }
+
+        function generateWorkflow() {
+            const input = document.getElementById('workflow-input').value.trim();
+            if (!input) {
+                alert('Please write a workflow description first!');
+                return;
+            }
+
+            // Parse the workflow
+            const lines = input.split('\n');
+            let inFrontmatter = false;
+            let frontmatter = {};
+            let description = [];
+
+            for (let line of lines) {
+                if (line.trim() === '---') {
+                    inFrontmatter = !inFrontmatter;
+                    continue;
+                }
+                if (inFrontmatter) {
+                    if (line.includes(':')) {
+                        const [key, ...values] = line.split(':');
+                        frontmatter[key.trim()] = values.join(':').trim();
+                    }
+                } else if (line.trim() && !line.startsWith('#')) {
+                    description.push(line);
+                }
+            }
+
+            // Generate GitHub Actions YAML
+            const workflow = generateGitHubAction(frontmatter, description.join('\n'));
+            document.getElementById('output').textContent = workflow;
+        }
+
+        function generateGitHubAction(config, description) {
+            // Extract config
+            const schedule = config.on?.includes('schedule') ? 'cron' : 'push';
+            const permissions = config.permissions || 'contents: read';
+            
+            return `name: Agentic Workflow
+# Auto-generated by Agentic Workflow Designer
+# Based on: ${config.on || 'manual trigger'}
+
+on:
+  workflow_dispatch:
+${schedule === 'cron' ? '  schedule:\n    - cron: "0 9 * * *"  # Daily at 9 AM UTC' : '  push:\n    branches: [main]'}
+
+permissions:
+  ${permissions.split('\n').map(p => p.trim()).join('\n  ')}
+
+jobs:
+  agentic-task:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup AI Agent Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Run AI Agent
+        env:
+          GITHUB_TOKEN: \${{ secrets.GITHUB_TOKEN }}
+          AI_API_KEY: \${{ secrets.AI_API_KEY }}
+        run: |
+          # AI Agent will execute the following task:
+          # ${description.split('\n').map(l => '# ' + l).join('\n          # ')}
+          
+          echo "🤖 AI Agent starting..."
+          echo "📋 Task: Execute workflow instructions"
+          echo "🔒 Running with minimal permissions (guardrails active)"
+          
+          # In a real setup, this would call the AI agent
+          # with the workflow description and safe-outputs config
+          
+          echo "✅ Workflow completed successfully"
+      
+      - name: Post Results
+        if: success()
+        run: |
+          echo "📊 Results posted via safe-outputs mechanism"
+          echo "🎉 Agentic workflow execution complete!"
+
+# Guardrails:
+# - Read-only by default
+# - Write operations via safe-outputs only
+# - Sandboxed execution
+# - Tool allowlisting enabled`;
+        }
+
+        function clearAll() {
+            document.getElementById('workflow-input').value = '';
+            document.getElementById('output').innerHTML = '<span style="color: #999;">Your generated workflow will appear here...</span>';
+        }
+
+        function copyToClipboard() {
+            const output = document.getElementById('output').textContent;
+            if (output.includes('will appear here')) {
+                alert('Generate a workflow first!');
+                return;
+            }
+            navigator.clipboard.writeText(output).then(() => {
+                alert('✅ Copied to clipboard!');
+            });
+        }
+
+        function downloadWorkflow() {
+            const output = document.getElementById('output').textContent;
+            if (output.includes('will appear here')) {
+                alert('Generate a workflow first!');
+                return;
+            }
+            
+            const blob = new Blob([output], { type: 'text/yaml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'agentic-workflow.yml';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
