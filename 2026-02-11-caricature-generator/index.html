@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Caricature Generator - Craft Your Perfect Prompt</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 40px;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .trend-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            backdrop-filter: blur(10px);
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .input-group input,
+        .input-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        .input-group input:focus,
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .input-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .style-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .style-option {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .style-option:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .style-option.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 20px;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .generate-btn:active {
+            transform: translateY(0);
+        }
+
+        .result-box {
+            display: none;
+            margin-top: 30px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+
+        .result-box.show {
+            display: block;
+            animation: slideIn 0.4s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-box h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .prompt-text {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .copy-btn {
+            padding: 12px 30px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .copy-btn:hover {
+            background: #218838;
+            transform: scale(1.05);
+        }
+
+        .copy-btn.copied {
+            background: #17a2b8;
+        }
+
+        .examples {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .example-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #f5576c;
+        }
+
+        .example-card h4 {
+            color: #f5576c;
+            margin-bottom: 10px;
+        }
+
+        .example-card p {
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        .emoji {
+            font-size: 1.5em;
+            margin-right: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 AI Caricature Generator</h1>
+            <div class="trend-badge">🔥 Viral on Twitter - Feb 2026</div>
+            <p style="margin-top: 15px; font-size: 1.1em;">Create your perfect caricature prompt for ChatGPT, Claude, or any AI image generator!</p>
+        </div>
+
+        <div class="content">
+            <div class="section">
+                <h2><span class="emoji">👤</span>Tell Us About Yourself</h2>
+                
+                <div class="input-group">
+                    <label>Your Profession/Work</label>
+                    <input type="text" id="profession" placeholder="e.g., Software Developer, Teacher, Artist">
+                </div>
+
+                <div class="input-group">
+                    <label>Your Hobbies (comma-separated)</label>
+                    <input type="text" id="hobbies" placeholder="e.g., Photography, Gaming, Cooking">
+                </div>
+
+                <div class="input-group">
+                    <label>Personality Traits (comma-separated)</label>
+                    <input type="text" id="personality" placeholder="e.g., Creative, Analytical, Adventurous">
+                </div>
+
+                <div class="input-group">
+                    <label>Favorite Tools/Objects (optional)</label>
+                    <input type="text" id="tools" placeholder="e.g., Coffee cup, Laptop, Camera">
+                </div>
+            </div>
+
+            <div class="section">
+                <h2><span class="emoji">🎭</span>Choose Your Style</h2>
+                <div class="style-selector">
+                    <div class="style-option active" data-style="cartoon">
+                        🎨 Cartoon
+                    </div>
+                    <div class="style-option" data-style="pixar">
+                        🎬 Pixar-Style
+                    </div>
+                    <div class="style-option" data-style="comic">
+                        📚 Comic Book
+                    </div>
+                    <div class="style-option" data-style="vintage">
+                        🕰️ Vintage
+                    </div>
+                    <div class="style-option" data-style="anime">
+                        ⚡ Anime
+                    </div>
+                    <div class="style-option" data-style="realistic">
+                        👔 Realistic Caricature
+                    </div>
+                </div>
+            </div>
+
+            <button class="generate-btn" onclick="generatePrompt()">
+                ✨ Generate My Caricature Prompt
+            </button>
+
+            <div class="result-box" id="resultBox">
+                <h3>🎯 Your Perfect Caricature Prompt:</h3>
+                <div class="prompt-text" id="promptText"></div>
+                <button class="copy-btn" onclick="copyPrompt()">
+                    📋 Copy to Clipboard
+                </button>
+                <p style="margin-top: 15px; color: #666;">
+                    <strong>How to use:</strong> Copy this prompt and paste it into ChatGPT, Claude, or your favorite AI image generator!
+                </p>
+            </div>
+
+            <div class="section" style="margin-top: 40px;">
+                <h2><span class="emoji">💡</span>Example Caricatures</h2>
+                <div class="examples">
+                    <div class="example-card">
+                        <h4>Software Developer</h4>
+                        <p>"A cartoon caricature of a developer surrounded by floating code snippets, holding a massive coffee cup, with multiple monitors orbiting around them like planets."</p>
+                    </div>
+                    <div class="example-card">
+                        <h4>Fitness Trainer</h4>
+                        <p>"A vibrant Pixar-style character with exaggerated muscles, juggling dumbbells, a yoga mat, and a protein shake, with a motivational aura radiating around them."</p>
+                    </div>
+                    <div class="example-card">
+                        <h4>Creative Designer</h4>
+                        <p>"A whimsical caricature with a paintbrush for hair, eyes shaped like cameras, and clothes made of colorful design swatches and typography."</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Built with 💜 | Inspired by the viral ChatGPT caricature trend of Feb 2026</p>
+            <p>No API needed - Generate prompts offline!</p>
+        </div>
+    </div>
+
+    <script>
+        let selectedStyle = 'cartoon';
+
+        // Handle style selection
+        document.querySelectorAll('.style-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.style-option').forEach(o => o.classList.remove('active'));
+                this.classList.add('active');
+                selectedStyle = this.dataset.style;
+            });
+        });
+
+        function generatePrompt() {
+            const profession = document.getElementById('profession').value.trim();
+            const hobbies = document.getElementById('hobbies').value.trim();
+            const personality = document.getElementById('personality').value.trim();
+            const tools = document.getElementById('tools').value.trim();
+
+            if (!profession || !hobbies || !personality) {
+                alert('Please fill in at least Profession, Hobbies, and Personality!');
+                return;
+            }
+
+            const styleDescriptions = {
+                'cartoon': 'a vibrant cartoon caricature',
+                'pixar': 'a Pixar-style 3D animated character',
+                'comic': 'a bold comic book style caricature',
+                'vintage': 'a vintage poster-style caricature',
+                'anime': 'an expressive anime-style character',
+                'realistic': 'a realistic yet exaggerated caricature'
+            };
+
+            // Build the prompt
+            let prompt = `Create ${styleDescriptions[selectedStyle]} of a ${profession}. `;
+            
+            // Add personality-based visual elements
+            const personalityTraits = personality.split(',').map(t => t.trim()).filter(t => t);
+            if (personalityTraits.length > 0) {
+                prompt += `Their personality is ${personalityTraits.join(', ')}, which should be reflected in their expression and pose. `;
+            }
+
+            // Add hobby elements
+            const hobbyList = hobbies.split(',').map(h => h.trim()).filter(h => h);
+            if (hobbyList.length > 0) {
+                prompt += `Surround them with exaggerated, floating elements representing their hobbies: ${hobbyList.join(', ')}. `;
+            }
+
+            // Add tools if provided
+            if (tools) {
+                const toolList = tools.split(',').map(t => t.trim()).filter(t => t);
+                prompt += `Include these signature items: ${toolList.join(', ')}. `;
+            }
+
+            // Add style-specific details
+            prompt += `The caricature should have exaggerated features that capture their essence - `;
+            prompt += `make their professional and personal characteristics visually prominent and fun. `;
+            prompt += `Use bright, energetic colors and dynamic composition. `;
+            prompt += `The overall vibe should be playful yet authentic to who they are.`;
+
+            // Display result
+            document.getElementById('promptText').textContent = prompt;
+            document.getElementById('resultBox').classList.add('show');
+            
+            // Scroll to result
+            document.getElementById('resultBox').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function copyPrompt() {
+            const promptText = document.getElementById('promptText').textContent;
+            navigator.clipboard.writeText(promptText).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Copied!';
+                btn.classList.add('copied');
+                
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                alert('Failed to copy. Please select and copy manually.');
+            });
+        }
+
+        // Add enter key support
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    generatePrompt();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
