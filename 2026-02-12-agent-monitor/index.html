@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Agent Monitor Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .agents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .agent-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .agent-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .agent-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .agent-name {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .status-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-active {
+            background: #10b981;
+            color: white;
+        }
+
+        .status-idle {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .status-error {
+            background: #ef4444;
+            color: white;
+        }
+
+        .agent-info {
+            margin-bottom: 15px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .info-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .info-value {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            background: #e5e7eb;
+            border-radius: 10px;
+            height: 10px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s ease;
+        }
+
+        .alert-box {
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 4px solid #ef4444;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            color: #991b1b;
+            font-size: 0.9em;
+        }
+
+        .refresh-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .refresh-button:hover {
+            background: #5568d3;
+        }
+
+        .last-updated {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.9);
+            margin-top: 30px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 AI Agent Monitor</h1>
+            <p class="subtitle">Real-time monitoring for your AI coding agents across all machines</p>
+        </header>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Agents</div>
+                <div class="stat-value" id="totalAgents">6</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Active Now</div>
+                <div class="stat-value" id="activeAgents">4</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Tasks</div>
+                <div class="stat-value" id="totalTasks">127</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Tokens Used (24h)</div>
+                <div class="stat-value" id="tokensUsed">2.4M</div>
+            </div>
+        </div>
+
+        <div class="agents-grid" id="agentsGrid">
+            <!-- Agent cards will be dynamically inserted here -->
+        </div>
+
+        <div style="text-align: center;">
+            <button class="refresh-button" onclick="refreshData()">🔄 Refresh Data</button>
+        </div>
+
+        <div class="last-updated">
+            Last updated: <span id="lastUpdate">--:--:--</span>
+        </div>
+    </div>
+
+    <script>
+        // Mock agent data
+        const agents = [
+            {
+                name: "Claude Coder Pro",
+                machine: "MacBook Pro M3",
+                status: "active",
+                task: "Refactoring auth module",
+                cpu: 45,
+                memory: 2.3,
+                uptime: "3h 24m",
+                tasksCompleted: 12,
+                model: "Claude Sonnet 4.5"
+            },
+            {
+                name: "GPT DevOps",
+                machine: "AWS EC2 (us-east-1)",
+                status: "active",
+                task: "Deploying microservices",
+                cpu: 67,
+                memory: 4.1,
+                uptime: "7h 12m",
+                tasksCompleted: 28,
+                model: "GPT-4.5 Turbo"
+            },
+            {
+                name: "Copilot Workspace",
+                machine: "Desktop PC",
+                status: "idle",
+                task: "Waiting for input",
+                cpu: 5,
+                memory: 0.8,
+                uptime: "12h 45m",
+                tasksCompleted: 45,
+                model: "GitHub Copilot"
+            },
+            {
+                name: "DeepSeek Coder",
+                machine: "Mac Mini M4",
+                status: "active",
+                task: "Code review on PR #234",
+                cpu: 38,
+                memory: 1.9,
+                uptime: "1h 56m",
+                tasksCompleted: 7,
+                model: "DeepSeek V3"
+            },
+            {
+                name: "Gemini Assistant",
+                machine: "Cloud Run",
+                status: "error",
+                task: "Connection timeout",
+                cpu: 12,
+                memory: 1.2,
+                uptime: "0h 34m",
+                tasksCompleted: 2,
+                model: "Gemini 2.0 Flash",
+                alert: "API rate limit exceeded. Retrying in 5 minutes."
+            },
+            {
+                name: "Local Llama",
+                machine: "RTX 4090 Workstation",
+                status: "active",
+                task: "Training fine-tune model",
+                cpu: 92,
+                memory: 18.4,
+                uptime: "24h 8m",
+                tasksCompleted: 33,
+                model: "Llama 4 70B"
+            }
+        ];
+
+        function renderAgents() {
+            const grid = document.getElementById('agentsGrid');
+            grid.innerHTML = '';
+
+            agents.forEach(agent => {
+                const card = document.createElement('div');
+                card.className = 'agent-card';
+                
+                card.innerHTML = `
+                    <div class="agent-header">
+                        <div class="agent-name">${agent.name}</div>
+                        <div class="status-badge status-${agent.status}">${agent.status}</div>
+                    </div>
+                    
+                    <div class="agent-info">
+                        <div class="info-row">
+                            <span class="info-label">Machine</span>
+                            <span class="info-value">${agent.machine}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Model</span>
+                            <span class="info-value">${agent.model}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Current Task</span>
+                            <span class="info-value">${agent.task}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Uptime</span>
+                            <span class="info-value">${agent.uptime}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Tasks Completed</span>
+                            <span class="info-value">${agent.tasksCompleted}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">CPU Usage</span>
+                            <span class="info-value">${agent.cpu}%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${agent.cpu}%"></div>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Memory</span>
+                            <span class="info-value">${agent.memory} GB</span>
+                        </div>
+                    </div>
+                    
+                    ${agent.alert ? `<div class="alert-box">⚠️ ${agent.alert}</div>` : ''}
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        function updateStats() {
+            const activeCount = agents.filter(a => a.status === 'active').length;
+            const totalTasks = agents.reduce((sum, a) => sum + a.tasksCompleted, 0);
+            
+            document.getElementById('activeAgents').textContent = activeCount;
+            document.getElementById('totalTasks').textContent = totalTasks;
+        }
+
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('lastUpdate').textContent = now.toLocaleTimeString();
+        }
+
+        function refreshData() {
+            // Simulate data refresh with random variations
+            agents.forEach(agent => {
+                if (agent.status === 'active') {
+                    agent.cpu = Math.min(100, Math.max(10, agent.cpu + (Math.random() * 20 - 10)));
+                    agent.memory = Math.max(0.5, agent.memory + (Math.random() * 0.5 - 0.25));
+                }
+            });
+            
+            renderAgents();
+            updateStats();
+            updateTime();
+        }
+
+        // Initialize
+        renderAgents();
+        updateStats();
+        updateTime();
+
+        // Auto-refresh every 5 seconds
+        setInterval(refreshData, 5000);
+    </script>
+</body>
+</html>
