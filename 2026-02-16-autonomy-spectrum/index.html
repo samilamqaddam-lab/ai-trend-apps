@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Autonomy Spectrum: Copilots vs Agents (2026)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .spectrum-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+        }
+
+        .spectrum-container {
+            position: relative;
+            margin: 40px 0;
+        }
+
+        .spectrum-bar {
+            height: 80px;
+            background: linear-gradient(to right, 
+                #3b82f6 0%, 
+                #8b5cf6 25%, 
+                #ec4899 50%, 
+                #f59e0b 75%, 
+                #ef4444 100%);
+            border-radius: 40px;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .spectrum-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .slider-container {
+            margin: 40px 0;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            border: 3px solid #667eea;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            border: 3px solid #667eea;
+        }
+
+        .current-level {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .level-title {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .level-description {
+            font-size: 1.1em;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .examples-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .example-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            border-radius: 15px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .example-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .example-name {
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .example-desc {
+            color: #555;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        .use-case {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .use-case-title {
+            font-weight: bold;
+            color: #3b82f6;
+            margin-bottom: 10px;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .metric {
+            text-align: center;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 10px;
+        }
+
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .metric-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .trend-badge {
+            display: inline-block;
+            background: #10b981;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin: 10px 0;
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .spectrum-card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 AI Autonomy Spectrum</h1>
+            <div class="subtitle">Copilots vs Agents: Understanding the 2026 AI Landscape</div>
+            <div class="trend-badge">🔥 Trending Feb 2026</div>
+        </header>
+
+        <div class="spectrum-card">
+            <h2 style="text-align: center; margin-bottom: 30px;">Interactive Autonomy Explorer</h2>
+            
+            <div class="spectrum-container">
+                <div class="spectrum-bar"></div>
+                <div class="spectrum-labels">
+                    <span>👤 Human-Led</span>
+                    <span>🤝 Collaborative</span>
+                    <span>🎯 Semi-Autonomous</span>
+                    <span>🚀 Fully Autonomous</span>
+                </div>
+            </div>
+
+            <div class="slider-container">
+                <input type="range" id="autonomySlider" min="0" max="100" value="50" step="1">
+            </div>
+
+            <div class="current-level">
+                <div class="level-title" id="levelTitle">Copilot</div>
+                <div class="level-description" id="levelDesc">AI suggests, human decides</div>
+            </div>
+
+            <div class="use-case" id="useCase">
+                <div class="use-case-title">💡 Best Used For:</div>
+                <div id="useCaseText">Loading...</div>
+            </div>
+
+            <div class="metrics">
+                <div class="metric">
+                    <div class="metric-value" id="autonomyPercent">50%</div>
+                    <div class="metric-label">Autonomy Level</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="humanInvolvement">50%</div>
+                    <div class="metric-label">Human Involvement</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="riskLevel">Medium</div>
+                    <div class="metric-label">Risk Profile</div>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 40px; margin-bottom: 20px;">Real-World Examples (Feb 2026)</h3>
+            <div class="examples-grid" id="examplesGrid">
+                <!-- Examples will be dynamically inserted -->
+            </div>
+        </div>
+
+        <footer>
+            <p>Built with real 2026 AI trends | Data from HN, Product Hunt, Microsoft Copilot research</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">The key insight: "Agents are the apps of the AI era, with copilot as the interface" - Microsoft 2026</p>
+        </footer>
+    </div>
+
+    <script>
+        const levels = [
+            {
+                range: [0, 20],
+                title: "Pure Copilot",
+                desc: "AI suggests, human reviews and executes every step",
+                useCase: "Code completion, writing assistance, design suggestions. Every action requires explicit human approval.",
+                examples: [
+                    { name: "GitHub Copilot", desc: "Suggests code, you accept/reject each line" },
+                    { name: "Grammarly", desc: "Grammar suggestions you manually apply" },
+                    { name: "ChatGPT", desc: "Answers questions, you copy/paste results" }
+                ],
+                risk: "Low"
+            },
+            {
+                range: [21, 40],
+                title: "Smart Assistant",
+                desc: "AI executes simple tasks with human oversight",
+                useCase: "Email drafting, calendar management, basic data queries. AI can take small actions within defined guardrails.",
+                examples: [
+                    { name: "Microsoft Copilot", desc: "Drafts emails, schedules meetings with your approval" },
+                    { name: "Notion AI", desc: "Generates and formats content in your workspace" },
+                    { name: "Perplexity", desc: "Research assistant that synthesizes sources" }
+                ],
+                risk: "Low"
+            },
+            {
+                range: [41, 60],
+                title: "Hybrid Copilot",
+                desc: "AI handles workflows, checks in at key decisions",
+                useCase: "Multi-step workflows, data analysis, content creation pipelines. Human approves major decisions, AI handles details.",
+                examples: [
+                    { name: "Cursor IDE", desc: "Writes code across files, asks before major refactors" },
+                    { name: "Claude Code", desc: "Builds features end-to-end, confirms architecture" },
+                    { name: "Zapier AI", desc: "Designs automation flows, human approves triggers" }
+                ],
+                risk: "Medium"
+            },
+            {
+                range: [61, 80],
+                title: "Semi-Autonomous Agent",
+                desc: "AI completes tasks end-to-end, reports results",
+                useCase: "Routine operations, monitoring, recurring workflows. Human sets goals, AI figures out how to achieve them.",
+                examples: [
+                    { name: "Browser Use", desc: "Navigates websites autonomously to extract data" },
+                    { name: "Devon AI", desc: "Solves GitHub issues from ticket to PR" },
+                    { name: "AutoGPT", desc: "Breaks down goals into sub-tasks and executes" }
+                ],
+                risk: "Medium-High"
+            },
+            {
+                range: [81, 100],
+                title: "Fully Autonomous Agent",
+                desc: "AI operates independently with minimal human input",
+                useCase: "System monitoring, threat detection, 24/7 operations. AI makes real-time decisions without waiting for approval.",
+                examples: [
+                    { name: "Palantir AIP", desc: "Autonomous defense operations and intelligence" },
+                    { name: "Trading Bots", desc: "Execute trades based on market conditions 24/7" },
+                    { name: "Infrastructure AI", desc: "Auto-scales servers, patches security holes" }
+                ],
+                risk: "High"
+            }
+        ];
+
+        const slider = document.getElementById('autonomySlider');
+        const levelTitle = document.getElementById('levelTitle');
+        const levelDesc = document.getElementById('levelDesc');
+        const useCaseText = document.getElementById('useCaseText');
+        const examplesGrid = document.getElementById('examplesGrid');
+        const autonomyPercent = document.getElementById('autonomyPercent');
+        const humanInvolvement = document.getElementById('humanInvolvement');
+        const riskLevel = document.getElementById('riskLevel');
+
+        function updateUI(value) {
+            const level = levels.find(l => value >= l.range[0] && value <= l.range[1]);
+            
+            if (level) {
+                levelTitle.textContent = level.title;
+                levelDesc.textContent = level.desc;
+                useCaseText.textContent = level.useCase;
+                riskLevel.textContent = level.risk;
+                
+                autonomyPercent.textContent = value + '%';
+                humanInvolvement.textContent = (100 - value) + '%';
+                
+                // Update examples
+                examplesGrid.innerHTML = level.examples.map(ex => `
+                    <div class="example-card">
+                        <div class="example-name">${ex.name}</div>
+                        <div class="example-desc">${ex.desc}</div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        slider.addEventListener('input', (e) => {
+            updateUI(parseInt(e.target.value));
+        });
+
+        // Initialize
+        updateUI(50);
+
+        // Add auto-demo mode
+        let demoMode = false;
+        let demoInterval;
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'd' || e.key === 'D') {
+                demoMode = !demoMode;
+                if (demoMode) {
+                    let direction = 1;
+                    demoInterval = setInterval(() => {
+                        let val = parseInt(slider.value);
+                        val += direction * 2;
+                        if (val >= 100) direction = -1;
+                        if (val <= 0) direction = 1;
+                        slider.value = val;
+                        updateUI(val);
+                    }, 100);
+                } else {
+                    clearInterval(demoInterval);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
