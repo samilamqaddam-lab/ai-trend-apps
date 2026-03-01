@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentic Prompt Builder — Vibe → Engineering</title>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --bg2: #0a0f14;
+            --card: #161b22;
+            --card2: #1c2128;
+            --border: #30363d;
+            --text: #c9d1d9;
+            --muted: #8b949e;
+            --accent: #58a6ff;
+            --green: #3fb950;
+            --purple: #a371f7;
+            --orange: #f78166;
+            --yellow: #e3b341;
+            --red: #f85149;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        header {
+            background: linear-gradient(135deg, #0d1117 0%, #1c1038 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(88, 166, 255, 0.15);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            font-size: 0.75rem;
+            padding: 0.2rem 0.75rem;
+            border-radius: 100px;
+            margin-bottom: 0.75rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #58a6ff, #a371f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            font-size: 1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .trend-quote {
+            background: rgba(163, 113, 247, 0.08);
+            border-left: 3px solid var(--purple);
+            border-radius: 0 8px 8px 0;
+            padding: 0.75rem 1rem;
+            margin: 1.5rem auto;
+            max-width: 700px;
+            font-style: italic;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .trend-quote strong { color: var(--text); font-style: normal; }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Mode toggle */
+        .mode-toggle {
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            width: fit-content;
+            margin: 0 auto 2rem;
+        }
+
+        .mode-btn {
+            padding: 0.6rem 1.5rem;
+            background: var(--card);
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .mode-btn.active {
+            background: var(--accent);
+            color: #0d1117;
+            font-weight: 600;
+        }
+
+        /* Layout */
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .layout { grid-template-columns: 1fr; }
+            h1 { font-size: 1.5rem; }
+        }
+
+        .panel {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .panel-header h2 {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .vibe-label { color: var(--orange); }
+        .agentic-label { color: var(--green); }
+        .patterns-label { color: var(--purple); }
+
+        .panel-body { padding: 1.25rem; }
+
+        /* Task input */
+        .task-section {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-bottom: 0.4rem;
+        }
+
+        textarea {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            padding: 0.75rem;
+            font-size: 0.9rem;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 100px;
+            transition: border-color 0.2s;
+        }
+
+        textarea:focus { outline: none; border-color: var(--accent); }
+
+        /* Patterns */
+        .patterns-grid {
+            display: grid;
+            gap: 0.6rem;
+        }
+
+        .pattern-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .pattern-card:hover { border-color: var(--purple); }
+
+        .pattern-card.selected {
+            border-color: var(--purple);
+            background: rgba(163, 113, 247, 0.08);
+        }
+
+        .pattern-check {
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 2px;
+            transition: all 0.2s;
+            font-size: 11px;
+        }
+
+        .pattern-card.selected .pattern-check {
+            background: var(--purple);
+            border-color: var(--purple);
+            color: white;
+        }
+
+        .pattern-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.2rem;
+        }
+
+        .pattern-desc {
+            font-size: 0.78rem;
+            color: var(--muted);
+        }
+
+        .pattern-example {
+            font-size: 0.75rem;
+            color: var(--purple);
+            font-family: 'Courier New', monospace;
+            margin-top: 0.3rem;
+            background: rgba(163, 113, 247, 0.08);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+        }
+
+        /* Output */
+        .output-section { margin-top: 0; }
+
+        .prompt-box {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.82rem;
+            color: var(--text);
+            min-height: 200px;
+            white-space: pre-wrap;
+            word-break: break-word;
+            line-height: 1.7;
+        }
+
+        .prompt-box .kw { color: var(--accent); font-weight: bold; }
+        .prompt-box .pattern-tag { color: var(--purple); }
+        .prompt-box .task-text { color: var(--green); }
+        .prompt-box .comment { color: var(--muted); }
+
+        /* Comparison */
+        .comparison {
+            grid-column: 1 / -1;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .comp-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+        }
+
+        .comp-col {
+            padding: 1rem;
+        }
+
+        .comp-col:first-child {
+            border-right: 1px solid var(--border);
+        }
+
+        .comp-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 0.6rem;
+        }
+
+        .vibe-ex { color: var(--orange); }
+        .agentic-ex { color: var(--green); }
+
+        .comp-text {
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .comp-text.agentic-ex { color: var(--text); }
+
+        /* Score bar */
+        .score-section {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background: var(--bg);
+            border-radius: 8px;
+        }
+
+        .score-label {
+            font-size: 0.8rem;
+            color: var(--muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .score-bar {
+            height: 8px;
+            background: var(--border);
+            border-radius: 100px;
+            overflow: hidden;
+            margin-bottom: 0.4rem;
+        }
+
+        .score-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--green));
+            border-radius: 100px;
+            transition: width 0.5s ease;
+        }
+
+        .score-value {
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .quality-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 0.6rem;
+        }
+
+        .qtag {
+            font-size: 0.72rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 100px;
+            background: rgba(63, 185, 80, 0.15);
+            color: var(--green);
+            border: 1px solid rgba(63, 185, 80, 0.3);
+        }
+
+        .qtag.missing {
+            background: rgba(248, 81, 73, 0.1);
+            color: var(--red);
+            border-color: rgba(248, 81, 73, 0.3);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--card2);
+            color: var(--text);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:hover { border-color: var(--accent); color: var(--accent); }
+        .btn.primary { background: var(--accent); color: #0d1117; border-color: var(--accent); font-weight: 600; }
+        .btn.primary:hover { background: #79b8ff; }
+
+        .btn-row {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        /* Chips */
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-bottom: 1rem;
+        }
+
+        .chip {
+            padding: 0.25rem 0.75rem;
+            border-radius: 100px;
+            font-size: 0.78rem;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--muted);
+            transition: all 0.2s;
+        }
+
+        .chip:hover, .chip.active {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(88, 166, 255, 0.1);
+        }
+
+        /* Step counter */
+        .step-count {
+            display: inline-block;
+            background: var(--purple);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 700;
+            border-radius: 100px;
+            padding: 0.1rem 0.45rem;
+            margin-left: 0.4rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--muted);
+            padding: 2rem;
+            font-size: 0.9rem;
+        }
+
+        .copy-success {
+            color: var(--green) !important;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="badge">🔥 Trending March 1, 2026</div>
+    <h1>⚡ Agentic Prompt Builder</h1>
+    <p class="subtitle">Transform vague "vibe prompts" into structured agentic engineering prompts — with TDD, validation, and quality gates.</p>
+    <div class="trend-quote">
+        <strong>@simonw:</strong> "I've published the first two chapters of a new guide to Agentic Engineering Patterns — coding practices to help get the best results out of agents like Claude Code and OpenAI Codex. <strong>Writing code is cheap now. Delivering <em>good</em> code is still expensive.</strong>"
+    </div>
+</header>
+
+<div class="container">
+
+    <!-- Mode toggle -->
+    <div style="text-align:center; margin-bottom:2rem;">
+        <div class="mode-toggle">
+            <button class="mode-btn active" onclick="setMode('build')" id="btn-build">🔨 Build Prompt</button>
+            <button class="mode-btn" onclick="setMode('compare')" id="btn-compare">⚡ Vibe vs Agentic</button>
+        </div>
+    </div>
+
+    <!-- Build Mode -->
+    <div id="mode-build">
+        <div class="layout">
+
+            <!-- Left: Input + Patterns -->
+            <div>
+                <!-- Task input -->
+                <div class="panel" style="margin-bottom:1.25rem;">
+                    <div class="panel-header">
+                        <span>📝</span>
+                        <h2>Your Coding Task</h2>
+                    </div>
+                    <div class="panel-body">
+                        <label>Quick examples:</label>
+                        <div class="chips">
+                            <span class="chip" onclick="setExample('auth')">🔐 Auth system</span>
+                            <span class="chip" onclick="setExample('api')">🔌 REST API</span>
+                            <span class="chip" onclick="setExample('scraper')">🕷️ Web scraper</span>
+                            <span class="chip" onclick="setExample('dashboard')">📊 Dashboard</span>
+                            <span class="chip" onclick="setExample('cli')">⌨️ CLI tool</span>
+                        </div>
+                        <label>Describe what you want to build:</label>
+                        <textarea id="task-input" placeholder="e.g. Build a user authentication system with login, signup, and password reset..." oninput="updateOutput()"></textarea>
+                    </div>
+                </div>
+
+                <!-- Patterns -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <span>🎯</span>
+                        <h2 class="patterns-label">Agentic Engineering Patterns</h2>
+                        <span class="step-count" id="pattern-count">0</span>
+                    </div>
+                    <div class="panel-body">
+                        <div class="patterns-grid" id="patterns-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Output -->
+            <div>
+                <div class="panel">
+                    <div class="panel-header">
+                        <span>✨</span>
+                        <h2 class="agentic-label">Generated Agentic Prompt</h2>
+                    </div>
+                    <div class="panel-body">
+                        <!-- Quality score -->
+                        <div class="score-section" id="score-section">
+                            <div class="score-label">Agentic Quality Score</div>
+                            <div class="score-bar">
+                                <div class="score-fill" id="score-fill" style="width:0%"></div>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span class="score-value" id="score-text" style="color:var(--muted)">Select patterns to improve quality</span>
+                            </div>
+                            <div class="quality-tags" id="quality-tags"></div>
+                        </div>
+
+                        <!-- Prompt output -->
+                        <div style="margin-top:1rem;">
+                            <label>Generated Prompt:</label>
+                            <div class="prompt-box" id="prompt-output"><span style="color:var(--muted)">← Enter your task and select patterns to generate an agentic engineering prompt.</span></div>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="btn-row">
+                            <button class="btn primary" onclick="copyPrompt()" id="copy-btn">📋 Copy Prompt</button>
+                            <button class="btn" onclick="clearAll()">🗑️ Clear</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Compare Mode -->
+    <div id="mode-compare" style="display:none;">
+        <div class="panel" style="margin-bottom:1.5rem;">
+            <div class="panel-header">
+                <h2>Pick a scenario to compare Vibe vs Agentic prompts</h2>
+            </div>
+            <div class="panel-body">
+                <div class="chips" id="compare-chips"></div>
+            </div>
+        </div>
+
+        <div class="comparison">
+            <div class="panel-header" style="border-bottom:1px solid var(--border);">
+                <h2>⚡ Side-by-Side Comparison</h2>
+            </div>
+            <div class="comp-grid">
+                <div class="comp-col">
+                    <div class="comp-label vibe-ex">😵 Vibe Prompt</div>
+                    <div class="comp-text" id="vibe-example">Select a scenario above...</div>
+                </div>
+                <div class="comp-col">
+                    <div class="comp-label agentic-ex">🎯 Agentic Engineering Prompt</div>
+                    <div class="comp-text agentic-ex" id="agentic-example">Select a scenario above...</div>
+                </div>
+            </div>
+            <div id="compare-insights" style="padding:1rem; border-top:1px solid var(--border); display:none;">
+                <div style="font-size:0.85rem; font-weight:600; color:var(--purple); margin-bottom:0.5rem;">💡 Why This Works Better</div>
+                <div id="insights-text" style="font-size:0.85rem; color:var(--muted); line-height:1.7;"></div>
+            </div>
+        </div>
+
+        <!-- Patterns reference -->
+        <div class="panel" style="margin-top:1.5rem;">
+            <div class="panel-header">
+                <h2 class="patterns-label">📚 Pattern Reference Card</h2>
+            </div>
+            <div class="panel-body">
+                <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:0.75rem;" id="reference-grid"></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+const PATTERNS = [
+    {
+        id: 'tdd',
+        name: '🔴🟢 Red/Green TDD',
+        desc: 'Instruct the agent to write failing tests FIRST, then implement. Prevents hallucinated passing code.',
+        example: 'Use red/green TDD.',
+        prefix: 'Use red/green TDD throughout.',
+        impact: 'high',
+    },
+    {
+        id: 'validation',
+        name: '✅ Explicit Validation',
+        desc: 'Define success criteria up front. Agent knows exactly when the task is done.',
+        example: 'Task is complete when: [criteria]',
+        prefix: null, // dynamic
+        impact: 'high',
+    },
+    {
+        id: 'async',
+        name: '⚡ Async/Parallel',
+        desc: "If there are independent subtasks, spawn multiple agents or tasks in parallel. Don't serialize unnecessarily.",
+        example: 'Parallelize independent subtasks where possible.',
+        prefix: 'Parallelize independent subtasks where possible.',
+        impact: 'medium',
+    },
+    {
+        id: 'yagni',
+        name: '🎯 YAGNI Constraint',
+        desc: 'Instruct the agent to only build what is explicitly asked. No extra abstractions or premature patterns.',
+        example: 'YAGNI: build only what is specified.',
+        prefix: 'Apply YAGNI — implement only what is explicitly specified. No extra abstractions.',
+        impact: 'medium',
+    },
+    {
+        id: 'docstrings',
+        name: '📖 Self-Documenting Code',
+        desc: 'Ask the agent to write docstrings, type hints, and inline comments for all public interfaces.',
+        example: 'Add docstrings and type hints to all public APIs.',
+        prefix: 'Add docstrings, type hints, and inline comments for all public interfaces.',
+        impact: 'medium',
+    },
+    {
+        id: 'errors',
+        name: '🔥 Error Handling',
+        desc: 'Require the agent to handle edge cases and errors explicitly, not just the happy path.',
+        example: 'Handle all error cases and edge conditions explicitly.',
+        prefix: 'Handle all error cases and edge conditions explicitly. Include meaningful error messages.',
+        impact: 'high',
+    },
+    {
+        id: 'security',
+        name: '🔒 Security First',
+        desc: 'Require input sanitization, no hardcoded secrets, and principle of least privilege.',
+        example: 'Apply security best practices: sanitize input, no hardcoded secrets.',
+        prefix: 'Apply security best practices: sanitize all input, use parameterized queries, no hardcoded secrets, principle of least privilege.',
+        impact: 'high',
+    },
+    {
+        id: 'atomic',
+        name: '🧩 Atomic Commits',
+        desc: 'Break the implementation into small, testable, independently verifiable steps.',
+        example: 'Break into atomic, testable steps.',
+        prefix: 'Break implementation into atomic, independently testable steps.',
+        impact: 'low',
+    },
+    {
+        id: 'observable',
+        name: '📊 Observability',
+        desc: 'Add logging, metrics hooks, and tracing so the agent\'s output can be monitored in production.',
+        example: 'Add logging for all key operations.',
+        prefix: 'Add structured logging for all key operations. Include request IDs where applicable.',
+        impact: 'medium',
+    },
+    {
+        id: 'timeout',
+        name: '⏱️ Completion Gate',
+        desc: 'Tell the agent to stop and report if it can\'t complete in a defined number of steps.',
+        example: 'If not complete in 10 steps, stop and report blockers.',
+        prefix: 'If unable to complete within 10 steps, stop and clearly report what is blocking progress.',
+        impact: 'low',
+    },
+];
+
+const EXAMPLES = {
+    auth: 'Build a user authentication system with signup, login, logout, and password reset via email.',
+    api: 'Create a REST API for a todo list app with CRUD operations, pagination, and user-scoped data.',
+    scraper: 'Build a Python web scraper that extracts product prices from an e-commerce site and saves to CSV.',
+    dashboard: 'Create a real-time analytics dashboard that shows user activity metrics with charts and filters.',
+    cli: 'Build a CLI tool to manage environment variables across multiple projects, with encryption for sensitive values.',
+};
+
+const COMPARISONS = [
+    {
+        id: 'auth',
+        label: '🔐 Auth System',
+        vibe: `build me a login system`,
+        agentic: `Build a user authentication system with the following:
+
+**Task:** Implement login, signup, logout, and password reset via email.
+
+**Use red/green TDD throughout.** Write failing tests first for each feature.
+
+**Task is complete when:**
+- All tests pass (signup, login, logout, reset flow)  
+- Passwords are hashed with bcrypt (cost factor ≥12)
+- JWT tokens expire in 15 min (refresh tokens: 7 days)
+- Rate limiting applied to auth endpoints (5 req/min)
+- No secrets hardcoded — read from env vars
+
+**Apply YAGNI** — no social login, no roles system, no 2FA unless explicitly asked.
+
+**Error handling:** Return structured JSON errors, never leak stack traces.
+
+Handle all edge cases: duplicate email, invalid token, expired token, malformed input.`,
+        insights: `The vibe prompt gets you something that "works" but ships without rate limiting, proper token expiry, or tests. The agentic prompt defines done clearly — the agent can't hallucinate a passing test suite, and the security requirements prevent common auth vulnerabilities. 3 patterns here: TDD + YAGNI + Security = dramatically higher output quality.`
+    },
+    {
+        id: 'api',
+        label: '🔌 REST API',
+        vibe: `make a todo API in Python`,
+        agentic: `Build a REST API for a todo list in Python (FastAPI).
+
+**Use red/green TDD.** Write pytest tests before each endpoint.
+
+**Endpoints required:**
+- POST /todos — create
+- GET /todos — list (paginated, 20/page)
+- GET /todos/{id} — get one
+- PUT /todos/{id} — update
+- DELETE /todos/{id} — delete
+
+**Task is complete when:**
+- All 5 endpoints have passing tests
+- Pagination works: \`?page=2&limit=20\`
+- Input validated via Pydantic (not manual checks)
+- SQLite DB with migrations via Alembic
+- 404 on missing resource, 422 on validation error
+
+**Apply YAGNI** — no auth, no tags, no priorities unless specified.
+
+**Add docstrings + type hints** to all functions.`,
+        insights: `The vibe prompt produces a working API but usually without pagination, proper validation, or tests. The agentic prompt defines exact endpoints, success criteria (all 5 tests pass), and constraints (YAGNI blocks scope creep). The TDD requirement means the agent can't ship untested code and claim it's done.`
+    },
+    {
+        id: 'cli',
+        label: '⌨️ CLI Tool',
+        vibe: `write a script that checks if my websites are down`,
+        agentic: `Build a CLI tool to monitor website uptime.
+
+**Use red/green TDD.** Write tests using mock HTTP responses.
+
+**Features:**
+- Check list of URLs from a config file (YAML)
+- Report status: UP / DOWN / SLOW (>2s response)
+- Retry 3 times before marking DOWN
+- Output: table format, color-coded
+
+**Task is complete when:**
+- Tests cover: UP, DOWN, SLOW, timeout, malformed URL
+- Config file format documented with example
+- Retry logic tested with mocked failures
+- Exit code 0 if all UP, 1 if any DOWN
+
+**Error handling:** If config file missing, print helpful error. Never crash silently.
+
+**Parallelize** URL checks — don't check sequentially.`,
+        insights: `The vibe prompt gets a quick script that checks URLs sequentially and crashes on network errors. The agentic prompt adds retry logic, parallel checks, proper exit codes for CI integration, and a defined test suite. The "task is complete when" section prevents the agent from stopping at the happy path.`
+    }
+];
+
+// State
+let selectedPatterns = new Set();
+let currentMode = 'build';
+let currentCompare = null;
+
+// Init
+function init() {
+    renderPatterns();
+    renderCompareChips();
+    renderReferenceGrid();
+}
+
+function renderPatterns() {
+    const container = document.getElementById('patterns-list');
+    container.innerHTML = PATTERNS.map(p => `
+        <div class="pattern-card ${selectedPatterns.has(p.id) ? 'selected' : ''}" 
+             onclick="togglePattern('${p.id}')">
+            <div class="pattern-check">${selectedPatterns.has(p.id) ? '✓' : ''}</div>
+            <div>
+                <div class="pattern-name">${p.name}</div>
+                <div class="pattern-desc">${p.desc}</div>
+                <div class="pattern-example">${p.example}</div>
+            </div>
+        </div>
+    `).join('');
+    document.getElementById('pattern-count').textContent = selectedPatterns.size;
+}
+
+function togglePattern(id) {
+    if (selectedPatterns.has(id)) {
+        selectedPatterns.delete(id);
+    } else {
+        selectedPatterns.add(id);
+    }
+    renderPatterns();
+    updateOutput();
+}
+
+function updateOutput() {
+    const task = document.getElementById('task-input').value.trim();
+    const output = document.getElementById('prompt-output');
+
+    if (!task && selectedPatterns.size === 0) {
+        output.innerHTML = '<span style="color:var(--muted)">← Enter your task and select patterns to generate an agentic engineering prompt.</span>';
+        updateScore();
+        return;
+    }
+
+    const lines = [];
+
+    if (task) {
+        lines.push(`<span class="kw">## Task</span>`);
+        lines.push(`<span class="task-text">${escHtml(task)}</span>`);
+        lines.push('');
+    }
+
+    // TDD first
+    if (selectedPatterns.has('tdd')) {
+        lines.push(`<span class="pattern-tag">## Approach</span>`);
+        lines.push(`Use <span class="kw">red/green TDD</span> throughout:`);
+        lines.push(`1. Write a failing test first (confirm it fails)`);
+        lines.push(`2. Implement the minimum code to pass`);
+        lines.push(`3. Refactor, then repeat`);
+        lines.push('');
+    }
+
+    // Validation / done criteria
+    if (selectedPatterns.has('validation')) {
+        lines.push(`<span class="pattern-tag">## Task is Complete When</span>`);
+        const taskLower = task.toLowerCase();
+        if (taskLower.includes('api') || taskLower.includes('endpoint')) {
+            lines.push(`- All endpoints return correct status codes (200, 201, 404, 422)`);
+            lines.push(`- All endpoints have passing tests`);
+            lines.push(`- Input validation rejects malformed requests`);
+        } else if (taskLower.includes('auth') || taskLower.includes('login')) {
+            lines.push(`- Login, signup, logout, and reset flows all pass tests`);
+            lines.push(`- Passwords are hashed (never stored plain)`);
+            lines.push(`- Tokens have correct expiry behavior`);
+        } else {
+            lines.push(`- [ ] All core functionality works end-to-end`);
+            lines.push(`- [ ] All tests pass`);
+            lines.push(`- [ ] Edge cases are handled`);
+            lines.push(`- [ ] No obvious security holes`);
+        }
+        lines.push('');
+    }
+
+    // Security
+    if (selectedPatterns.has('security')) {
+        lines.push(`<span class="pattern-tag">## Security Requirements</span>`);
+        lines.push(`- Sanitize all external input`);
+        lines.push(`- No hardcoded secrets — use environment variables`);
+        lines.push(`- Apply principle of least privilege`);
+        lines.push(`- Use parameterized queries (no string interpolation in SQL)`);
+        lines.push('');
+    }
+
+    // Error handling
+    if (selectedPatterns.has('errors')) {
+        lines.push(`<span class="pattern-tag">## Error Handling</span>`);
+        lines.push(`- Handle all error cases explicitly (not just happy path)`);
+        lines.push(`- Return structured error messages`);
+        lines.push(`- Never expose stack traces to external callers`);
+        lines.push(`- Log errors with context for debugging`);
+        lines.push('');
+    }
+
+    // YAGNI
+    if (selectedPatterns.has('yagni')) {
+        lines.push(`<span class="pattern-tag">## Constraints (YAGNI)</span>`);
+        lines.push(`- Build ONLY what is explicitly specified above`);
+        lines.push(`- No extra abstractions, design patterns, or future-proofing`);
+        lines.push(`- If unsure whether to add something — don't`);
+        lines.push('');
+    }
+
+    // Docs
+    if (selectedPatterns.has('docstrings')) {
+        lines.push(`<span class="pattern-tag">## Code Quality</span>`);
+        lines.push(`- Add docstrings and type hints to all public functions`);
+        lines.push(`- Inline comments for non-obvious logic`);
+        lines.push(`- Keep functions small and single-purpose`);
+        lines.push('');
+    }
+
+    // Async
+    if (selectedPatterns.has('async')) {
+        lines.push(`<span class="pattern-tag">## Performance</span>`);
+        lines.push(`- Parallelize independent subtasks (don't serialize unnecessarily)`);
+        lines.push(`- Identify blocking operations and make them async if beneficial`);
+        lines.push('');
+    }
+
+    // Observability
+    if (selectedPatterns.has('observable')) {
+        lines.push(`<span class="pattern-tag">## Observability</span>`);
+        lines.push(`- Add structured logging for all key operations`);
+        lines.push(`- Include request/operation IDs in log entries`);
+        lines.push(`- Log at appropriate levels (DEBUG/INFO/WARNING/ERROR)`);
+        lines.push('');
+    }
+
+    // Atomic commits
+    if (selectedPatterns.has('atomic')) {
+        lines.push(`<span class="pattern-tag">## Implementation Steps</span>`);
+        lines.push(`Break implementation into atomic steps, each independently verifiable:`);
+        lines.push(`1. Minimal setup (dependencies, project structure)`);
+        lines.push(`2. Core data model`);
+        lines.push(`3. Business logic (with tests)`);
+        lines.push(`4. Integration layer`);
+        lines.push(`5. Final integration test`);
+        lines.push('');
+    }
+
+    // Completion gate
+    if (selectedPatterns.has('timeout')) {
+        lines.push(`<span class="pattern-tag">## Agent Instruction</span>`);
+        lines.push(`If you cannot make progress after 10 steps, STOP.`);
+        lines.push(`Report:`);
+        lines.push(`- What you've completed`);
+        lines.push(`- What is blocking progress`);
+        lines.push(`- What decision or information you need from me`);
+        lines.push('');
+    }
+
+    if (lines.length === 0) {
+        output.innerHTML = '<span style="color:var(--muted)">Select at least one pattern to generate the prompt.</span>';
+    } else {
+        output.innerHTML = lines.join('\n');
+    }
+
+    updateScore();
+}
+
+function updateScore() {
+    const selected = selectedPatterns.size;
+    const highImpact = ['tdd','validation','security','errors'].filter(p => selectedPatterns.has(p)).length;
+    
+    const score = Math.min(100, (selected * 8) + (highImpact * 5));
+    const fill = document.getElementById('score-fill');
+    const text = document.getElementById('score-text');
+    
+    fill.style.width = score + '%';
+    
+    if (score === 0) {
+        text.textContent = 'No patterns selected';
+        text.style.color = 'var(--muted)';
+    } else if (score < 30) {
+        text.textContent = `${score}% — Basic`;
+        text.style.color = 'var(--orange)';
+    } else if (score < 60) {
+        text.textContent = `${score}% — Solid`;
+        text.style.color = 'var(--yellow)';
+    } else if (score < 85) {
+        text.textContent = `${score}% — Strong`;
+        text.style.color = 'var(--accent)';
+    } else {
+        text.textContent = `${score}% — Production-Ready ✨`;
+        text.style.color = 'var(--green)';
+    }
+
+    // Quality tags
+    const tags = document.getElementById('quality-tags');
+    const allPatterns = PATTERNS.map(p => p.id);
+    tags.innerHTML = PATTERNS.filter(p => ['tdd','validation','security','errors','yagni'].includes(p.id)).map(p => `
+        <span class="qtag ${selectedPatterns.has(p.id) ? '' : 'missing'}">${selectedPatterns.has(p.id) ? '✓' : '✗'} ${p.name.replace(/^[^\s]+\s/, '')}</span>
+    `).join('');
+}
+
+function setExample(key) {
+    document.getElementById('task-input').value = EXAMPLES[key];
+    // Auto-select recommended patterns
+    selectedPatterns = new Set(['tdd', 'validation', 'errors']);
+    renderPatterns();
+    updateOutput();
+}
+
+function copyPrompt() {
+    const box = document.getElementById('prompt-output');
+    const text = box.innerText;
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = '✅ Copied!';
+        btn.classList.add('copy-success');
+        setTimeout(() => {
+            btn.textContent = '📋 Copy Prompt';
+            btn.classList.remove('copy-success');
+        }, 2000);
+    });
+}
+
+function clearAll() {
+    document.getElementById('task-input').value = '';
+    selectedPatterns = new Set();
+    renderPatterns();
+    updateOutput();
+}
+
+// Compare mode
+function renderCompareChips() {
+    const container = document.getElementById('compare-chips');
+    container.innerHTML = COMPARISONS.map(c => `
+        <span class="chip ${currentCompare === c.id ? 'active' : ''}" onclick="showComparison('${c.id}')">${c.label}</span>
+    `).join('');
+}
+
+function showComparison(id) {
+    currentCompare = id;
+    const comp = COMPARISONS.find(c => c.id === id);
+    renderCompareChips();
+    
+    document.getElementById('vibe-example').style.whiteSpace = 'pre-wrap';
+    document.getElementById('agentic-example').style.whiteSpace = 'pre-wrap';
+    document.getElementById('vibe-example').textContent = comp.vibe;
+    document.getElementById('agentic-example').textContent = comp.agentic;
+    
+    const insightsEl = document.getElementById('compare-insights');
+    insightsEl.style.display = 'block';
+    document.getElementById('insights-text').textContent = comp.insights;
+}
+
+function renderReferenceGrid() {
+    const container = document.getElementById('reference-grid');
+    container.innerHTML = PATTERNS.map(p => `
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:0.75rem;">
+            <div style="font-weight:600;font-size:0.9rem;margin-bottom:0.3rem;">${p.name}</div>
+            <div style="font-size:0.78rem;color:var(--muted);margin-bottom:0.4rem;">${p.desc}</div>
+            <div style="font-size:0.75rem;color:var(--purple);font-family:monospace;background:rgba(163,113,247,0.08);padding:0.2rem 0.4rem;border-radius:4px;">${p.example}</div>
+        </div>
+    `).join('');
+}
+
+function setMode(mode) {
+    currentMode = mode;
+    document.getElementById('mode-build').style.display = mode === 'build' ? '' : 'none';
+    document.getElementById('mode-compare').style.display = mode === 'compare' ? '' : 'none';
+    document.getElementById('btn-build').classList.toggle('active', mode === 'build');
+    document.getElementById('btn-compare').classList.toggle('active', mode === 'compare');
+}
+
+function escHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+init();
+</script>
+</body>
+</html>
