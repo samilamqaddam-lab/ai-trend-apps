@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Agent Workforce Planner — 2026</title>
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #12121a;
+      --surface2: #1a1a26;
+      --border: #2a2a40;
+      --accent: #6366f1;
+      --accent2: #a78bfa;
+      --green: #22c55e;
+      --yellow: #eab308;
+      --red: #ef4444;
+      --cyan: #06b6d4;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px 16px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .header .badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #6366f1, #a78bfa);
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 999px;
+      margin-bottom: 16px;
+    }
+
+    .header h1 {
+      font-size: clamp(28px, 5vw, 48px);
+      font-weight: 800;
+      background: linear-gradient(135deg, #e2e8f0 0%, #a78bfa 50%, #06b6d4 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 12px;
+    }
+
+    .header p {
+      color: var(--muted);
+      font-size: 15px;
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    .trend-quote {
+      background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(6,182,212,0.1));
+      border: 1px solid rgba(99,102,241,0.3);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin: 0 auto 36px auto;
+      max-width: 700px;
+      font-style: italic;
+      color: #c4b5fd;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .trend-quote strong { color: #a78bfa; font-style: normal; }
+
+    .container { max-width: 1000px; margin: 0 auto; }
+
+    /* Step 1: Role Selector */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      margin-bottom: 24px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .step-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1, #a78bfa);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .section-title { font-size: 18px; font-weight: 700; }
+
+    .roles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px;
+    }
+
+    .role-card {
+      background: var(--surface2);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 12px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .role-card:hover { border-color: var(--accent); background: rgba(99,102,241,0.1); }
+    .role-card.active { border-color: var(--accent); background: rgba(99,102,241,0.15); }
+
+    .role-icon { font-size: 28px; margin-bottom: 6px; }
+    .role-name { font-size: 13px; font-weight: 600; color: var(--text); }
+    .role-awu { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+    /* Step 2: Task Table */
+    .tasks-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .tasks-table th {
+      text-align: left;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tasks-table td {
+      padding: 12px;
+      border-bottom: 1px solid rgba(42,42,64,0.5);
+      font-size: 14px;
+    }
+
+    .task-row { transition: background 0.15s; }
+    .task-row:hover { background: rgba(255,255,255,0.02); }
+
+    .delegability-bar {
+      width: 100%;
+      height: 8px;
+      background: var(--border);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .delegability-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.5s ease;
+    }
+
+    .toggle-btn {
+      width: 44px;
+      height: 24px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .toggle-btn::after {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: white;
+      top: 3px;
+      transition: left 0.2s;
+    }
+
+    .toggle-btn.on { background: var(--green); }
+    .toggle-btn.on::after { left: 23px; }
+    .toggle-btn.off { background: var(--border); }
+    .toggle-btn.off::after { left: 3px; }
+
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .tag-high { background: rgba(34,197,94,0.15); color: var(--green); }
+    .tag-med { background: rgba(234,179,8,0.15); color: var(--yellow); }
+    .tag-low { background: rgba(239,68,68,0.15); color: var(--red); }
+
+    /* AWU Meter */
+    .awu-section {
+      background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(6,182,212,0.08));
+      border: 1px solid rgba(99,102,241,0.25);
+      border-radius: var(--radius);
+      padding: 28px;
+      margin-bottom: 24px;
+    }
+
+    .awu-display {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .awu-main {
+      text-align: center;
+    }
+
+    .awu-number {
+      font-size: 72px;
+      font-weight: 900;
+      line-height: 1;
+      background: linear-gradient(135deg, #6366f1, #06b6d4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .awu-label {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .awu-gauge {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .gauge-track {
+      height: 20px;
+      background: var(--border);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+
+    .gauge-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #6366f1, #06b6d4);
+      border-radius: 999px;
+      transition: width 0.8s ease;
+    }
+
+    .gauge-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .awu-breakdown {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .stat-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .stat-val {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .stat-label { font-size: 12px; color: var(--muted); }
+
+    /* Recommendations */
+    .recs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .rec-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px;
+    }
+
+    .rec-card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .rec-icon { font-size: 20px; }
+    .rec-title { font-size: 15px; font-weight: 700; }
+
+    .rec-body { font-size: 13px; color: var(--muted); line-height: 1.6; }
+    .rec-tools { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+
+    .tool-tag {
+      background: rgba(99,102,241,0.15);
+      color: #a78bfa;
+      border: 1px solid rgba(99,102,241,0.3);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    /* Timeline */
+    .timeline { display: flex; gap: 0; }
+    .timeline-step {
+      flex: 1;
+      text-align: center;
+      padding: 16px 8px;
+      position: relative;
+    }
+
+    .timeline-step::after {
+      content: '→';
+      position: absolute;
+      right: -8px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    .timeline-step:last-child::after { display: none; }
+
+    .timeline-dot {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      margin: 0 auto 10px;
+      transition: all 0.3s;
+    }
+
+    .timeline-step.done .timeline-dot {
+      border-color: var(--green);
+      background: rgba(34,197,94,0.1);
+    }
+
+    .timeline-step.active .timeline-dot {
+      border-color: var(--accent);
+      background: rgba(99,102,241,0.15);
+      box-shadow: 0 0 20px rgba(99,102,241,0.3);
+    }
+
+    .timeline-label { font-size: 12px; color: var(--muted); }
+    .timeline-sublabel { font-size: 11px; color: var(--muted); margin-top: 2px; opacity: 0.7; }
+
+    .action-btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #6366f1, #a78bfa);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 16px;
+    }
+
+    .action-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(99,102,241,0.4); }
+
+    .insight-box {
+      background: rgba(6,182,212,0.08);
+      border: 1px solid rgba(6,182,212,0.2);
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-top: 20px;
+      font-size: 14px;
+      color: #67e8f9;
+      line-height: 1.6;
+    }
+
+    .insight-box strong { color: var(--cyan); }
+
+    footer {
+      text-align: center;
+      margin-top: 48px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    footer a { color: #6366f1; text-decoration: none; }
+
+    @media (max-width: 600px) {
+      .awu-breakdown { grid-template-columns: 1fr; }
+      .awu-display { flex-direction: column; }
+      .timeline { flex-direction: column; gap: 8px; }
+      .timeline-step::after { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="badge">🤖 AI Trend • Feb 28, 2026</div>
+  <h1>AI Agent Workforce Planner</h1>
+  <p>Every employee in 2026 is becoming a <strong>supervisor of AI agents</strong>. Map your tasks, calculate your AWU score, and plan your transition to an agent-augmented workflow.</p>
+</div>
+
+<div class="trend-quote">
+  <strong>"The most significant shift isn't just about efficiency — it's an employee-centric transformation. In 2026, every employee, from analysts to VPs, becomes a human supervisor of agents."</strong>
+  — GApps Group AI Agent Trends 2026 Report
+</div>
+
+<div class="container">
+
+  <!-- Step 1: Choose Your Role -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num">1</div>
+      <div class="section-title">Choose Your Role</div>
+    </div>
+    <div class="roles-grid" id="roles-grid"></div>
+  </div>
+
+  <!-- Step 2: Task Inventory -->
+  <div class="section" id="tasks-section" style="display:none">
+    <div class="section-header">
+      <div class="step-num">2</div>
+      <div class="section-title">Your Task Inventory</div>
+    </div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Toggle which tasks you want to delegate to AI agents. AI can handle tasks rated <span style="color:var(--green)">High</span> with confidence today.</p>
+    <table class="tasks-table" id="tasks-table">
+      <thead>
+        <tr>
+          <th>Task</th>
+          <th style="width:140px">AI Delegability</th>
+          <th style="width:80px">Readiness</th>
+          <th style="width:70px">Delegate</th>
+        </tr>
+      </thead>
+      <tbody id="tasks-tbody"></tbody>
+    </table>
+  </div>
+
+  <!-- AWU Meter -->
+  <div class="awu-section" id="awu-section" style="display:none">
+    <div class="section-header" style="margin-bottom:24px">
+      <div class="step-num">3</div>
+      <div class="section-title">Your AWU Score — Agent Work Units</div>
+    </div>
+    <div class="awu-display">
+      <div class="awu-main">
+        <div class="awu-number" id="awu-number">0</div>
+        <div class="awu-label">Agent Work Units / week</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px" id="awu-context"></div>
+      </div>
+      <div class="awu-gauge">
+        <div style="font-size:13px;color:var(--muted);margin-bottom:8px">Delegation Rate</div>
+        <div class="gauge-track">
+          <div class="gauge-fill" id="gauge-fill" style="width:0%"></div>
+        </div>
+        <div class="gauge-labels">
+          <span>0%</span>
+          <span id="gauge-pct">0%</span>
+          <span>100%</span>
+        </div>
+        <div class="insight-box" id="insight-box" style="margin-top:16px"></div>
+      </div>
+    </div>
+    <div class="awu-breakdown">
+      <div class="stat-box">
+        <div class="stat-val" id="stat-delegated" style="color:var(--green)">0</div>
+        <div class="stat-label">Tasks Delegated to AI</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="stat-retained" style="color:var(--accent)">0</div>
+        <div class="stat-label">Tasks You Retain</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="stat-hours" style="color:var(--cyan)">0h</div>
+        <div class="stat-label">Hours Freed / Week</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Journey Timeline -->
+  <div class="section" id="journey-section" style="display:none">
+    <div class="section-header">
+      <div class="step-num">4</div>
+      <div class="section-title">Your Agent Adoption Journey</div>
+    </div>
+    <div class="timeline" id="timeline">
+      <div class="timeline-step done">
+        <div class="timeline-dot">🧑</div>
+        <div class="timeline-label">Individual Contributor</div>
+        <div class="timeline-sublabel">You do it all</div>
+      </div>
+      <div class="timeline-step" id="t2">
+        <div class="timeline-dot">🤝</div>
+        <div class="timeline-label">AI-Augmented</div>
+        <div class="timeline-sublabel">AI assists, you lead</div>
+      </div>
+      <div class="timeline-step" id="t3">
+        <div class="timeline-dot">🎯</div>
+        <div class="timeline-label">Delegation Mode</div>
+        <div class="timeline-sublabel">You direct agents</div>
+      </div>
+      <div class="timeline-step" id="t4">
+        <div class="timeline-dot">🚀</div>
+        <div class="timeline-label">Agent Supervisor</div>
+        <div class="timeline-sublabel">Full fleet manager</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recommendations -->
+  <div class="section" id="recs-section" style="display:none">
+    <div class="section-header">
+      <div class="step-num">5</div>
+      <div class="section-title">Recommended Agent Stack</div>
+    </div>
+    <div class="recs-grid" id="recs-grid"></div>
+    <button class="action-btn" onclick="resetAll()">🔄 Try Another Role</button>
+  </div>
+
+</div>
+
+<footer>
+  <p>Built from the <strong>AI Agent Workforce</strong> trend • Feb 28, 2026</p>
+  <p style="margin-top:4px">Source: <a href="#">GApps Group AI Agent Trends 2026</a> · <a href="#">Salesforce AWU Metrics</a> · <a href="#">MIT Tech Review</a></p>
+  <p style="margin-top:8px">Part of the <a href="../index.html">AI Trend Apps</a> series by <strong>samilamqaddam-lab</strong></p>
+</footer>
+
+<script>
+const ROLES = [
+  { id: 'developer', name: 'Software Dev', icon: '💻', awuBase: 28, tasks: [
+    { name: 'Write boilerplate code', delegability: 95, hours: 4 },
+    { name: 'Code review & linting', delegability: 85, hours: 3 },
+    { name: 'Write unit tests', delegability: 88, hours: 3 },
+    { name: 'Debug error logs', delegability: 70, hours: 2 },
+    { name: 'Write documentation', delegability: 80, hours: 2 },
+    { name: 'Architecture decisions', delegability: 20, hours: 3 },
+    { name: 'Team collaboration', delegability: 10, hours: 4 },
+    { name: 'Production deploys', delegability: 65, hours: 1 },
+    { name: 'Ticket prioritization', delegability: 55, hours: 1 },
+  ]},
+  { id: 'marketer', name: 'Marketer', icon: '📣', awuBase: 32, tasks: [
+    { name: 'Write social posts', delegability: 90, hours: 3 },
+    { name: 'Email campaign copy', delegability: 85, hours: 3 },
+    { name: 'SEO keyword research', delegability: 92, hours: 2 },
+    { name: 'Competitor analysis', delegability: 80, hours: 2 },
+    { name: 'A/B test analysis', delegability: 75, hours: 2 },
+    { name: 'Brand strategy', delegability: 15, hours: 4 },
+    { name: 'Customer interviews', delegability: 10, hours: 3 },
+    { name: 'Ad creative ideation', delegability: 60, hours: 2 },
+    { name: 'Campaign reporting', delegability: 88, hours: 1 },
+  ]},
+  { id: 'analyst', name: 'Data Analyst', icon: '📊', awuBase: 35, tasks: [
+    { name: 'SQL query writing', delegability: 92, hours: 4 },
+    { name: 'Dashboard creation', delegability: 82, hours: 3 },
+    { name: 'Data cleaning', delegability: 88, hours: 3 },
+    { name: 'Statistical modeling', delegability: 60, hours: 3 },
+    { name: 'Report generation', delegability: 90, hours: 2 },
+    { name: 'Insight narration', delegability: 70, hours: 2 },
+    { name: 'Business strategy', delegability: 15, hours: 4 },
+    { name: 'Stakeholder meetings', delegability: 8, hours: 3 },
+    { name: 'Data pipeline setup', delegability: 78, hours: 2 },
+  ]},
+  { id: 'pm', name: 'Product Mgr', icon: '🗺️', awuBase: 22, tasks: [
+    { name: 'Write PRDs', delegability: 72, hours: 3 },
+    { name: 'Meeting summaries', delegability: 95, hours: 2 },
+    { name: 'Competitive research', delegability: 85, hours: 2 },
+    { name: 'Backlog grooming', delegability: 65, hours: 2 },
+    { name: 'User story writing', delegability: 75, hours: 2 },
+    { name: 'Product vision', delegability: 10, hours: 5 },
+    { name: 'Stakeholder alignment', delegability: 12, hours: 4 },
+    { name: 'Customer interviews', delegability: 15, hours: 3 },
+    { name: 'Roadmap planning', delegability: 40, hours: 3 },
+  ]},
+  { id: 'writer', name: 'Content Writer', icon: '✍️', awuBase: 30, tasks: [
+    { name: 'Research & outlines', delegability: 88, hours: 3 },
+    { name: 'First draft', delegability: 80, hours: 4 },
+    { name: 'SEO optimization', delegability: 90, hours: 1 },
+    { name: 'Proofreading', delegability: 85, hours: 2 },
+    { name: 'Social excerpts', delegability: 92, hours: 1 },
+    { name: 'Original voice/style', delegability: 15, hours: 3 },
+    { name: 'Source interviews', delegability: 10, hours: 3 },
+    { name: 'Editorial strategy', delegability: 20, hours: 3 },
+    { name: 'Newsletter mgmt', delegability: 70, hours: 2 },
+  ]},
+  { id: 'designer', name: 'Designer', icon: '🎨', awuBase: 20, tasks: [
+    { name: 'Wireframing', delegability: 65, hours: 3 },
+    { name: 'Design specs', delegability: 78, hours: 2 },
+    { name: 'Asset generation', delegability: 80, hours: 3 },
+    { name: 'Accessibility checks', delegability: 85, hours: 1 },
+    { name: 'Design system updates', delegability: 55, hours: 2 },
+    { name: 'Creative direction', delegability: 12, hours: 5 },
+    { name: 'User research', delegability: 15, hours: 4 },
+    { name: 'Brand identity', delegability: 10, hours: 4 },
+    { name: 'Prototype testing', delegability: 50, hours: 2 },
+  ]},
+  { id: 'sales', name: 'Sales Rep', icon: '💼', awuBase: 25, tasks: [
+    { name: 'Email outreach', delegability: 85, hours: 3 },
+    { name: 'Lead qualification', delegability: 80, hours: 2 },
+    { name: 'CRM data entry', delegability: 95, hours: 2 },
+    { name: 'Proposal drafting', delegability: 72, hours: 2 },
+    { name: 'Follow-up sequences', delegability: 90, hours: 2 },
+    { name: 'Relationship building', delegability: 8, hours: 5 },
+    { name: 'Complex negotiations', delegability: 10, hours: 4 },
+    { name: 'Deal strategy', delegability: 20, hours: 3 },
+    { name: 'Demo calls', delegability: 30, hours: 3 },
+  ]},
+  { id: 'ops', name: 'Operations', icon: '⚙️', awuBase: 38, tasks: [
+    { name: 'Process documentation', delegability: 88, hours: 3 },
+    { name: 'Status reporting', delegability: 92, hours: 2 },
+    { name: 'Scheduling & logistics', delegability: 85, hours: 2 },
+    { name: 'Invoice processing', delegability: 95, hours: 2 },
+    { name: 'Vendor communications', delegability: 70, hours: 2 },
+    { name: 'Strategic planning', delegability: 12, hours: 5 },
+    { name: 'Change management', delegability: 10, hours: 4 },
+    { name: 'Team leadership', delegability: 8, hours: 4 },
+    { name: 'Compliance reviews', delegability: 60, hours: 2 },
+  ]},
+];
+
+const AGENT_RECS = {
+  developer: [
+    { icon: '🤖', title: 'Claude Code / Cursor', body: 'AI pair programmer for boilerplate, tests, and refactoring. Writes production-quality code from comments.', tools: ['Claude Code', 'Cursor', 'GitHub Copilot'] },
+    { icon: '🔍', title: 'Code Review Agent', body: 'Automated code review bot that checks for bugs, security issues, and style violations before PR merge.', tools: ['CodeRabbit', 'Greptile', 'Swimm AI'] },
+    { icon: '📝', title: 'Docs Agent', body: 'Generates and keeps documentation in sync with code changes automatically.', tools: ['Mintlify', 'Swimm', 'Scribe'] },
+  ],
+  marketer: [
+    { icon: '✍️', title: 'Content Agent', body: 'Writes first-draft blog posts, social content, and email campaigns from a topic brief.', tools: ['Jasper', 'Copy.ai', 'Claude'] },
+    { icon: '📈', title: 'SEO Research Agent', body: 'Monitors keyword gaps, competitor rankings, and content opportunities 24/7.', tools: ['Surfer SEO', 'Ahrefs AI', 'SEMrush'] },
+    { icon: '📊', title: 'Analytics Agent', body: 'Ingests campaign data and generates weekly narrative reports with actionable insights.', tools: ['Mixpanel AI', 'GA4 Gemini', 'Looker AI'] },
+  ],
+  analyst: [
+    { icon: '🗄️', title: 'SQL Agent', body: 'Translates business questions into SQL queries, executes, and returns visualizations.', tools: ['Mode AI', 'Hex Magic', 'Metabase AI'] },
+    { icon: '🤖', title: 'Data Cleaning Bot', body: 'Automatically detects anomalies, fills missing values, and flags data quality issues.', tools: ['OpenRefine AI', 'dbt', 'Great Expectations'] },
+    { icon: '📋', title: 'Report Narrator', body: 'Takes dashboard screenshots and generates executive-ready written narratives.', tools: ['Tableau Pulse', 'Qlik AI', 'ThoughtSpot'] },
+  ],
+  pm: [
+    { icon: '📄', title: 'PRD Writer Agent', body: 'Generates product requirement documents from voice notes and meeting transcripts.', tools: ['Notion AI', 'Linear AI', 'Cycle'] },
+    { icon: '🔎', title: 'Competitive Intel Agent', body: 'Monitors competitor changelogs, pricing, and reviews to surface strategic signals daily.', tools: ['Klue', 'Crayon', 'ChatGPT Research'] },
+    { icon: '📝', title: 'Meeting Summary Bot', body: 'Joins calls, records, transcribes, and generates action items automatically.', tools: ['Otter.ai', 'Fireflies', 'Granola'] },
+  ],
+  writer: [
+    { icon: '🔬', title: 'Research Agent', body: 'Gathers sources, synthesizes data, and creates structured outlines from a single prompt.', tools: ['Perplexity Pro', 'Claude Research', 'Elicit'] },
+    { icon: '✅', title: 'Edit & SEO Agent', body: 'Proofreads, optimizes for search keywords, and suggests structural improvements.', tools: ['Grammarly AI', 'Surfer SEO', 'Frase'] },
+    { icon: '📱', title: 'Repurposing Agent', body: 'Turns a blog post into tweets, LinkedIn updates, newsletter blurbs, and video scripts.', tools: ['Repurpose.io', 'Taplio', 'Typefully'] },
+  ],
+  designer: [
+    { icon: '🖼️', title: 'Asset Generation', body: 'Creates illustrations, icons, and design variants from text prompts at scale.', tools: ['Midjourney', 'Adobe Firefly', 'FLUX'] },
+    { icon: '♿', title: 'Accessibility Auditor', body: 'Scans designs for WCAG violations, contrast issues, and missing ARIA labels.', tools: ['Figma AI', 'Axe', 'Color.review'] },
+    { icon: '📐', title: 'Spec Writer', body: 'Generates developer handoff specs from Figma designs automatically.', tools: ['Figma Dev Mode', 'Anima', 'Supernova'] },
+  ],
+  sales: [
+    { icon: '📧', title: 'Outreach Sequencer', body: 'Writes personalized cold email sequences based on LinkedIn profile + company context.', tools: ['Apollo AI', 'Outreach.io', 'Lavender'] },
+    { icon: '🎯', title: 'Lead Scorer', body: 'Ranks inbound leads by ICP fit and buying intent signals in real-time.', tools: ['Clay', 'Clearbit AI', '6sense'] },
+    { icon: '📋', title: 'CRM Autopilot', body: 'Logs all calls, emails, and meetings to CRM with auto-generated summaries.', tools: ['Salesforce Einstein', 'HubSpot AI', 'Gong'] },
+  ],
+  ops: [
+    { icon: '📄', title: 'Process Documenter', body: 'Watches screen recordings and generates step-by-step SOPs automatically.', tools: ['Scribe', 'Tango', 'Loom AI'] },
+    { icon: '📅', title: 'Scheduling Agent', body: 'Coordinates complex multi-party scheduling, rooms, and logistics without back-and-forth.', tools: ['Reclaim.ai', 'Motion', 'Cal.ai'] },
+    { icon: '💰', title: 'Finance Automator', body: 'Processes invoices, flags anomalies, and generates budget variance reports.', tools: ['Ramp AI', 'Brex AI', 'Dext'] },
+  ],
+};
+
+const INSIGHTS = [
+  { min: 0, max: 20, msg: '🟡 Early stage. You\'re still doing most work manually. <strong>Start with your highest-delegability task</strong> to build confidence with agents.' },
+  { min: 20, max: 40, msg: '🔵 Getting started. You\'ve delegated some tasks — you\'re in <strong>AI-Augmented mode</strong>. Expand delegation to free up strategic time.' },
+  { min: 40, max: 60, msg: '🟢 Good progress. Nearly half your workload is agent-handled. You\'re entering <strong>Delegation Mode</strong> — focus on quality control.' },
+  { min: 60, max: 80, msg: '🚀 Advanced adopter. You\'re functioning as an <strong>Agent Supervisor</strong>. Your role is shifting from doer to orchestrator.' },
+  { min: 80, max: 101, msg: '⚡ Agent-first. You\'re at the <strong>frontier of work transformation</strong>. Focus on tasks only humans can do: vision, empathy, judgment.' },
+];
+
+let activeRole = null;
+let delegations = {};
+
+function getLevel(d) {
+  if (d >= 75) return { label: 'High', cls: 'tag-high' };
+  if (d >= 45) return { label: 'Medium', cls: 'tag-med' };
+  return { label: 'Low', cls: 'tag-low' };
+}
+
+function getBarColor(d) {
+  if (d >= 75) return 'var(--green)';
+  if (d >= 45) return 'var(--yellow)';
+  return 'var(--red)';
+}
+
+function renderRoles() {
+  const grid = document.getElementById('roles-grid');
+  grid.innerHTML = ROLES.map(r => `
+    <div class="role-card ${activeRole === r.id ? 'active' : ''}" onclick="selectRole('${r.id}')">
+      <div class="role-icon">${r.icon}</div>
+      <div class="role-name">${r.name}</div>
+      <div class="role-awu">~${r.awuBase} AWU potential</div>
+    </div>
+  `).join('');
+}
+
+function selectRole(roleId) {
+  activeRole = roleId;
+  delegations = {};
+  const role = ROLES.find(r => r.id === roleId);
+  // Default: delegate high-delegability tasks
+  role.tasks.forEach((t, i) => { delegations[i] = t.delegability >= 75; });
+  renderRoles();
+  renderTasks(role);
+  updateAWU(role);
+  document.getElementById('tasks-section').style.display = 'block';
+  document.getElementById('awu-section').style.display = 'block';
+  document.getElementById('journey-section').style.display = 'block';
+  document.getElementById('recs-section').style.display = 'block';
+  renderRecs(roleId);
+  document.getElementById('tasks-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function renderTasks(role) {
+  const tbody = document.getElementById('tasks-tbody');
+  tbody.innerHTML = role.tasks.map((t, i) => {
+    const lv = getLevel(t.delegability);
+    const color = getBarColor(t.delegability);
+    const on = delegations[i];
+    return `
+    <tr class="task-row">
+      <td>${t.name}</td>
+      <td>
+        <div class="delegability-bar">
+          <div class="delegability-fill" style="width:${t.delegability}%;background:${color}"></div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px">${t.delegability}% ready</div>
+      </td>
+      <td><span class="tag ${lv.cls}">${lv.label}</span></td>
+      <td>
+        <button class="toggle-btn ${on ? 'on' : 'off'}" onclick="toggleTask(${i})"></button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function toggleTask(i) {
+  const role = ROLES.find(r => r.id === activeRole);
+  delegations[i] = !delegations[i];
+  renderTasks(role);
+  updateAWU(role);
+}
+
+function updateAWU(role) {
+  const delegatedTasks = role.tasks.filter((_, i) => delegations[i]);
+  const totalTasks = role.tasks.length;
+  const delegatedCount = delegatedTasks.length;
+  const hoursFreed = delegatedTasks.reduce((s, t) => s + t.hours, 0);
+  const pct = Math.round((delegatedCount / totalTasks) * 100);
+
+  // AWU = estimated hours freed * agent efficiency multiplier
+  const awu = Math.round(hoursFreed * 2.2);
+
+  document.getElementById('awu-number').textContent = awu;
+  document.getElementById('gauge-fill').style.width = pct + '%';
+  document.getElementById('gauge-pct').textContent = pct + '%';
+  document.getElementById('stat-delegated').textContent = delegatedCount;
+  document.getElementById('stat-retained').textContent = totalTasks - delegatedCount;
+  document.getElementById('stat-hours').textContent = hoursFreed + 'h';
+
+  const awuContext = awu === 0 ? 'No delegation yet'
+    : awu < 20 ? '≈ 1 junior hire equivalent'
+    : awu < 40 ? '≈ 1-2 contractor equivalents'
+    : awu < 60 ? '≈ 2-3 freelancer equivalents'
+    : '≈ Small team equivalent';
+  document.getElementById('awu-context').textContent = awuContext;
+
+  const insight = INSIGHTS.find(i => pct >= i.min && pct < i.max);
+  if (insight) document.getElementById('insight-box').innerHTML = insight.msg;
+
+  // Timeline
+  document.getElementById('t2').className = 'timeline-step ' + (pct >= 20 ? 'done' : pct > 0 ? 'active' : '');
+  document.getElementById('t3').className = 'timeline-step ' + (pct >= 45 ? 'done' : pct >= 20 ? 'active' : '');
+  document.getElementById('t4').className = 'timeline-step ' + (pct >= 70 ? 'done' : pct >= 45 ? 'active' : '');
+}
+
+function renderRecs(roleId) {
+  const recs = AGENT_RECS[roleId] || [];
+  const grid = document.getElementById('recs-grid');
+  grid.innerHTML = recs.map(r => `
+    <div class="rec-card">
+      <div class="rec-card-header">
+        <div class="rec-icon">${r.icon}</div>
+        <div class="rec-title">${r.title}</div>
+      </div>
+      <div class="rec-body">${r.body}</div>
+      <div class="rec-tools">${r.tools.map(t => `<span class="tool-tag">${t}</span>`).join('')}</div>
+    </div>
+  `).join('');
+}
+
+function resetAll() {
+  activeRole = null;
+  delegations = {};
+  renderRoles();
+  document.getElementById('tasks-section').style.display = 'none';
+  document.getElementById('awu-section').style.display = 'none';
+  document.getElementById('journey-section').style.display = 'none';
+  document.getElementById('recs-section').style.display = 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Init
+renderRoles();
+</script>
+</body>
+</html>
