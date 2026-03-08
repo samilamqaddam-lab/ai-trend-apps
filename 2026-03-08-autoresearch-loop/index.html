@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoResearch Loop — Self-Improving AI Research Visualizer</title>
+    <style>
+        :root {
+            --bg: #0a0e1a;
+            --card: #111827;
+            --border: #1f2937;
+            --text: #e2e8f0;
+            --muted: #64748b;
+            --accent: #6366f1;
+            --accent2: #8b5cf6;
+            --green: #10b981;
+            --yellow: #f59e0b;
+            --red: #ef4444;
+            --cyan: #06b6d4;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', monospace;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .container { max-width: 900px; margin: 0 auto; }
+
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            color: var(--accent);
+            font-size: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            font-size: 1rem;
+            max-width: 560px;
+            margin: 0 auto;
+        }
+
+        .trend-quote {
+            background: rgba(16, 185, 129, 0.08);
+            border-left: 3px solid var(--green);
+            padding: 0.75rem 1rem;
+            margin: 1.5rem 0;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.9rem;
+            color: #a7f3d0;
+            font-style: italic;
+        }
+
+        .trend-quote span { color: var(--green); font-weight: 600; font-style: normal; }
+
+        /* Loop Visualizer */
+        .loop-section {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .loop-section h2 {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .loop-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            padding: 1rem 0;
+        }
+
+        .loop-node {
+            flex: 1;
+            min-width: 100px;
+            background: var(--bg);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 0.75rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .loop-node.active {
+            border-color: var(--accent);
+            background: rgba(99, 102, 241, 0.1);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.25);
+        }
+
+        .loop-node.done {
+            border-color: var(--green);
+            background: rgba(16, 185, 129, 0.08);
+        }
+
+        .loop-node .icon { font-size: 1.8rem; margin-bottom: 0.4rem; }
+        .loop-node .label { font-size: 0.75rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+        .loop-node .name { font-size: 0.9rem; font-weight: 700; color: var(--text); margin-top: 0.25rem; }
+
+        .loop-arrow {
+            color: var(--muted);
+            font-size: 1.5rem;
+            flex-shrink: 0;
+            transition: color 0.3s;
+        }
+
+        .loop-arrow.active { color: var(--accent); }
+
+        /* Input area */
+        .input-section {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-section h2 {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .input-row {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        input[type="text"], select {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.6rem 0.9rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            flex: 1;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus, select:focus {
+            border-color: var(--accent);
+        }
+
+        select { cursor: pointer; }
+
+        .btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.25rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .btn:hover { background: var(--accent2); transform: translateY(-1px); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--muted);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: transparent;
+        }
+
+        /* Simulation output */
+        .sim-output {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .sim-header {
+            background: rgba(99, 102, 241, 0.1);
+            border-bottom: 1px solid var(--border);
+            padding: 0.75rem 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sim-header-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .sim-status {
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+
+        .iteration-list {
+            padding: 1rem;
+            min-height: 200px;
+        }
+
+        .iteration {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+            opacity: 0;
+            transform: translateY(8px);
+            transition: all 0.4s ease;
+        }
+
+        .iteration.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .iter-badge {
+            background: rgba(99, 102, 241, 0.2);
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            color: var(--accent);
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+            white-space: nowrap;
+            height: fit-content;
+            flex-shrink: 0;
+        }
+
+        .iter-content { flex: 1; }
+
+        .iter-phase {
+            font-size: 0.72rem;
+            color: var(--muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+
+        .iter-text {
+            font-size: 0.88rem;
+            color: var(--text);
+            line-height: 1.5;
+            background: var(--bg);
+            padding: 0.6rem 0.8rem;
+            border-radius: 8px;
+            border-left: 3px solid transparent;
+        }
+
+        .iter-text.phase-research { border-left-color: var(--cyan); }
+        .iter-text.phase-feedback { border-left-color: var(--yellow); }
+        .iter-text.phase-refine { border-left-color: var(--green); }
+
+        .score-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+        }
+
+        .score-label { font-size: 0.72rem; color: var(--muted); flex-shrink: 0; }
+
+        .progress-bar {
+            flex: 1;
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.8s ease;
+            background: linear-gradient(90deg, var(--accent), var(--green));
+        }
+
+        .score-val { font-size: 0.8rem; font-weight: 700; color: var(--green); flex-shrink: 0; }
+
+        /* Stats grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent), var(--cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label { font-size: 0.78rem; color: var(--muted); margin-top: 0.25rem; }
+
+        /* Info cards */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .info-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+        }
+
+        .info-card h3 {
+            font-size: 0.85rem;
+            margin-bottom: 0.75rem;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .info-card ul {
+            list-style: none;
+            font-size: 0.82rem;
+            color: var(--muted);
+            line-height: 1.8;
+        }
+
+        .info-card ul li::before { content: "→ "; color: var(--accent); }
+
+        /* Pulse animation */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .pulse { animation: pulse 1.5s infinite; }
+
+        /* Thinking cursor */
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 2px;
+            height: 0.9em;
+            background: var(--accent);
+            margin-left: 2px;
+            vertical-align: middle;
+            animation: blink 0.8s infinite;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 180px;
+            color: var(--muted);
+            font-size: 0.9rem;
+            gap: 0.5rem;
+        }
+
+        .empty-state .big-icon { font-size: 3rem; margin-bottom: 0.5rem; }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 1.6rem; }
+            .loop-diagram { gap: 0.25rem; }
+            .loop-node { min-width: 70px; padding: 0.75rem 0.5rem; }
+            .loop-node .icon { font-size: 1.4rem; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .info-grid { grid-template-columns: 1fr; }
+            .input-row { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <header>
+        <div class="badge">🔥 Trending Today — Mar 8, 2026</div>
+        <h1>AutoResearch Loop</h1>
+        <p class="subtitle">Visualize Karpathy's self-improving AI research agent — from cold prompt to expert model, one iteration at a time</p>
+        <div class="trend-quote">
+            <span>@karpathy</span>: "I packaged up the 'autoresearch' project into a new self-contained minimal repo... ~630 lines of code. The human iterates on the prompt, the AI researches, the loop improves the model."
+        </div>
+    </header>
+
+    <!-- Loop Diagram -->
+    <div class="loop-section">
+        <h2>🔄 The Self-Improvement Loop</h2>
+        <div class="loop-diagram" id="loopDiagram">
+            <div class="loop-node" id="node-0" onclick="focusNode(0)">
+                <div class="icon">💬</div>
+                <div class="label">Step 1</div>
+                <div class="name">Define Prompt</div>
+            </div>
+            <div class="loop-arrow" id="arrow-0">→</div>
+            <div class="loop-node" id="node-1" onclick="focusNode(1)">
+                <div class="icon">🔬</div>
+                <div class="label">Step 2</div>
+                <div class="name">AI Researches</div>
+            </div>
+            <div class="loop-arrow" id="arrow-1">→</div>
+            <div class="loop-node" id="node-2" onclick="focusNode(2)">
+                <div class="icon">🧑‍💻</div>
+                <div class="label">Step 3</div>
+                <div class="name">Human Reviews</div>
+            </div>
+            <div class="loop-arrow" id="arrow-2">→</div>
+            <div class="loop-node" id="node-3" onclick="focusNode(3)">
+                <div class="icon">⚡</div>
+                <div class="label">Step 4</div>
+                <div class="name">Model Trains</div>
+            </div>
+            <div class="loop-arrow" id="arrow-3">↩</div>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value" id="statIterations">0</div>
+            <div class="stat-label">Iterations Run</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="statScore">—</div>
+            <div class="stat-label">Research Quality</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="statGain">—</div>
+            <div class="stat-label">Improvement Gain</div>
+        </div>
+    </div>
+
+    <!-- Input -->
+    <div class="input-section">
+        <h2>🚀 Run a Simulated Research Loop</h2>
+        <div class="input-row">
+            <input type="text" id="topicInput" placeholder="Research topic (e.g. 'quantum computing', 'CRISPR editing', 'diffusion models'...)" value="diffusion language models" />
+            <select id="domainSelect">
+                <option value="ml">Machine Learning</option>
+                <option value="bio">Biology / Medicine</option>
+                <option value="physics">Physics</option>
+                <option value="cs">Computer Science</option>
+                <option value="economics">Economics</option>
+                <option value="neuroscience">Neuroscience</option>
+            </select>
+        </div>
+        <div class="input-row">
+            <select id="iterSelect">
+                <option value="3">3 iterations (quick)</option>
+                <option value="5" selected>5 iterations (standard)</option>
+                <option value="7">7 iterations (deep)</option>
+            </select>
+            <button class="btn" id="runBtn" onclick="runSimulation()">▶ Run Loop</button>
+            <button class="btn btn-secondary" onclick="resetSim()">↺ Reset</button>
+        </div>
+    </div>
+
+    <!-- Simulation Output -->
+    <div class="sim-output">
+        <div class="sim-header">
+            <div class="sim-header-title">
+                <span id="simStatusIcon">🔮</span>
+                <span id="simStatusLabel">AutoResearch Loop Simulator</span>
+            </div>
+            <div class="sim-status" id="simStatusRight">Ready to run</div>
+        </div>
+        <div class="iteration-list" id="iterationList">
+            <div class="empty-state">
+                <div class="big-icon">🤖</div>
+                <strong>Set a topic and run the loop</strong>
+                <span>Watch the AI iteratively improve its research quality</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Grid -->
+    <div class="info-grid">
+        <div class="info-card">
+            <h3>🧠 How AutoResearch Works</h3>
+            <ul>
+                <li>Start with a domain-specific research prompt</li>
+                <li>Single-GPU training, ~630 lines of Python</li>
+                <li>AI generates hypotheses and explores literature</li>
+                <li>Human feedback shapes the next training run</li>
+                <li>Each loop specializes the model further</li>
+                <li>Output: a fine-tuned expert for your domain</li>
+            </ul>
+        </div>
+        <div class="info-card">
+            <h3>💡 Why This Matters</h3>
+            <ul>
+                <li>Own your model — no vendor lock-in</li>
+                <li>Specialists beat generalists on niche tasks</li>
+                <li>Private data stays private</li>
+                <li>Control over model updates and direction</li>
+                <li>Cost-efficient inference once trained</li>
+                <li>Foundation for autonomous research agents</li>
+            </ul>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // ---- Research content by domain ----
+    const domainData = {
+        ml: {
+            label: "Machine Learning",
+            hypotheses: [
+                "Diffusion-based token prediction may outperform autoregressive generation on long-form tasks due to parallel inference.",
+                "Sparse attention with learned routing can achieve 90% of dense attention quality at 30% compute cost.",
+                "Self-play with constitutional AI principles may produce more aligned models than RLHF with human annotators.",
+                "Mixture-of-experts architectures exhibit emergent specialization when trained on sufficiently diverse corpora.",
+                "Chain-of-thought prompting generalizes better when models are fine-tuned on reasoning traces rather than answers.",
+                "Context window efficiency can be improved 3x via hierarchical compression without semantic loss.",
+                "Model merging via linear interpolation preserves 85% of individual model strengths in combined capability."
+            ],
+            feedback: [
+                "Hypothesis is promising but lacks empirical support. Request ablation study on sequence length vs. quality.",
+                "Need more concrete benchmarks. Compare against FlashAttention-3 baseline on MMLU.",
+                "Strong theoretical foundation. Prioritize testing on RLHF-sensitive tasks like summarization.",
+                "Interesting finding. Explore routing collapse prevention mechanisms.",
+                "Good direction. Include comparison to zero-shot CoT and process-reward models.",
+                "Efficiency gains look real. Test on context lengths >128k tokens.",
+                "Merge strategy needs validation across more model families (Llama, Mistral, Gemma)."
+            ]
+        },
+        bio: {
+            label: "Biology / Medicine",
+            hypotheses: [
+                "CRISPR base editing efficiency correlates with local chromatin accessibility at guide RNA binding sites.",
+                "mRNA stability can be predicted from codon usage patterns using transformer models trained on expression data.",
+                "Protein-protein interaction networks exhibit scale-free topology with hubs enriched for disease genes.",
+                "Gut microbiome diversity indices predict cognitive decline risk 5 years before clinical symptoms.",
+                "CAR-T cell exhaustion is driven by tonic signaling that can be mitigated by inducible promoter systems.",
+                "Senolytic compounds show additive efficacy when combined with caloric restriction in aged murine models.",
+                "Single-cell RNA sequencing reveals previously unknown progenitor cell states in pancreatic development."
+            ],
+            feedback: [
+                "Promising correlation. Validate with ATAC-seq data across at least 3 cell lines.",
+                "Model needs training on species-specific expression data. Human validation required.",
+                "Hub gene identification is solid. Cross-reference with OMIM disease gene database.",
+                "Longitudinal cohort is too small. Replicate in UK Biobank dataset.",
+                "Interesting mechanism. Test inducible CARs in orthotopic tumor mouse model.",
+                "Effect size needs quantification. Include lifespan and healthspan metrics.",
+                "Novel finding. Validate with orthogonal methods (FISH, immunohistochemistry)."
+            ]
+        },
+        physics: {
+            label: "Physics",
+            hypotheses: [
+                "Room-temperature superconductivity in cuprates may be achievable through strain engineering of oxygen octahedral tilt.",
+                "Dark matter density fluctuations at sub-galactic scales could be detected via 21cm hydrogen line interferometry.",
+                "Topological insulators with engineered defect densities exhibit enhanced thermoelectric efficiency at room temperature.",
+                "Quantum error correction thresholds can be improved by 40% using surface code variants with adaptive decoding.",
+                "Gravitational wave detector sensitivity gains beyond LIGO can be achieved via squeezed light injection at 4K.",
+                "Phonon engineering in 2D materials enables directional heat flow control for nanoscale thermal management.",
+                "Casimir force measurements at sub-10nm separations reveal deviations from standard electrodynamic predictions."
+            ],
+            feedback: [
+                "Strain engineering approach is novel. Measure critical temperature vs. octahedral tilt angle systematically.",
+                "Interferometry proposal needs SKA sensitivity estimates. Compare with Euclid survey constraints.",
+                "Thermoelectric ZT > 2 claim needs independent replication. Share raw transport data.",
+                "Adaptive decoding improvement is significant. Benchmark on realistic noise models.",
+                "Squeezed light injection tested at LHO — request collaboration on sensitivity curves.",
+                "Directional heat flow is fascinating. Measure thermal rectification ratio as function of defect density.",
+                "Sub-10nm measurement is technically challenging. Detail tip-sample distance control method."
+            ]
+        },
+        cs: {
+            label: "Computer Science",
+            hypotheses: [
+                "Formal verification of neural network properties can be made tractable via abstract interpretation on activation spaces.",
+                "Zero-knowledge proofs for machine learning model inference can be generated in under 100ms on consumer hardware.",
+                "Distributed consensus protocols achieve Byzantine fault tolerance with 50% fewer message rounds using cryptographic accumulators.",
+                "Memory-safe systems languages reduce CVE frequency by 70% but show 15% performance overhead vs. C in kernel modules.",
+                "Homomorphic encryption for database queries is now practical for OLAP workloads under 1GB with CKKS scheme variants.",
+                "Compiler-directed speculative execution mitigation eliminates 95% of Spectre variants with under 5% throughput loss.",
+                "Graph neural networks on program dependency graphs achieve 91% accuracy in automated vulnerability detection."
+            ],
+            feedback: [
+                "Abstract interpretation approach is promising. Benchmark against Marabou and α,β-CROWN on MNIST networks.",
+                "100ms ZK proof claim needs hardware specification. Reproduce on standard M1 MacBook Pro.",
+                "Message round reduction is significant. Prove safety under Byzantine asynchrony formally.",
+                "CVE frequency study needs multi-year dataset. Include control for codebase age and team size.",
+                "OLAP benchmark needs TPC-H comparison. Include query latency distribution, not just median.",
+                "Speculative execution mitigation: measure on real workloads (nginx, PostgreSQL) not microbenchmarks.",
+                "Vulnerability detection: test on CVE datasets from 2024-2025 to assess temporal generalization."
+            ]
+        },
+        economics: {
+            label: "Economics",
+            hypotheses: [
+                "AI-driven automation correlates with increased wage polarization in manufacturing but not in knowledge-intensive sectors.",
+                "Central bank digital currencies reduce transaction costs for cross-border remittances by 60-80% vs. correspondent banking.",
+                "Algorithmic pricing in oligopolistic markets produces supra-competitive outcomes without explicit collusion.",
+                "Gig economy platform market concentration predicts lower worker earnings even controlling for task composition.",
+                "Carbon border adjustment mechanisms may reduce global emissions by 8-12% if adopted across G20 nations.",
+                "Prediction markets incorporating AI forecasters outperform expert panels on geopolitical event forecasting.",
+                "Sovereign wealth fund diversification into alternative assets reduces volatility without proportional return sacrifice."
+            ],
+            feedback: [
+                "Wage polarization finding needs replication across EU labor markets with different union density levels.",
+                "CBDC remittance savings estimate needs comparison with current Wise/Remitly rates as baseline.",
+                "Algorithmic collusion evidence is circumstantial. Construct a structural model with counterfactual prices.",
+                "Gig economy earnings study: instrument platform entry with regulatory shocks, not platform choice.",
+                "CGE model for carbon border adjustment: validate with existing GTAP trade flow data.",
+                "Prediction market study: control for market liquidity and participant incentive structure.",
+                "Alternative asset allocation: bootstrap 10,000 portfolio scenarios to quantify tail risk change."
+            ]
+        },
+        neuroscience: {
+            label: "Neuroscience",
+            hypotheses: [
+                "Hippocampal sharp-wave ripples encode compressed future trajectories for prospective memory consolidation.",
+                "Glymphatic system clearance rates during slow-wave sleep predict next-day cognitive performance.",
+                "Thalamo-cortical coherence in the 10-12Hz range gates sensory awareness during attentional selection.",
+                "Dopaminergic prediction error signals in the striatum generalize across modalities beyond reward learning.",
+                "Default mode network deactivation magnitude correlates with working memory capacity across individuals.",
+                "Neuroplasticity induced by transcranial direct current stimulation is modulated by circadian rhythm phase.",
+                "Grid cell firing patterns in entorhinal cortex encode abstract conceptual spaces beyond physical navigation."
+            ],
+            feedback: [
+                "Sharp-wave ripple study: record from CA1 during offline replay and compare to prospective planning task.",
+                "Glymphatic clearance: use MRI-ASL to measure clearance in same subjects performing cognitive tests.",
+                "Thalamo-cortical coherence: use simultaneous MEG/EEG and manipulate attention with visual competition.",
+                "Dopaminergic generalization: test across reward, social, and aversive prediction errors with fMRI.",
+                "DMN deactivation study: include individual differences in mind-wandering frequency as covariate.",
+                "tDCS circadian modulation: counterbalance stimulation time across subjects in crossover design.",
+                "Grid cell abstraction: use multidimensional scaling on spike rates during semantic categorization task."
+            ]
+        }
+    };
+
+    // ---- Simulation state ----
+    let running = false;
+    let simData = null;
+
+    function focusNode(idx) {
+        document.querySelectorAll('.loop-node').forEach((n, i) => {
+            n.classList.toggle('active', i === idx);
+        });
+    }
+
+    function setNodeState(idx, state) {
+        const node = document.getElementById(`node-${idx}`);
+        const arrow = document.getElementById(`arrow-${idx}`);
+        if (!node) return;
+        node.classList.remove('active', 'done');
+        if (state === 'active') node.classList.add('active');
+        if (state === 'done') node.classList.add('done');
+        if (arrow) arrow.classList.toggle('active', state === 'active');
+    }
+
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+    function lerp(a, b, t) { return Math.round(a + (b - a) * t); }
+
+    function typeText(el, text, speed = 18) {
+        return new Promise(resolve => {
+            el.innerHTML = '';
+            const cursor = document.createElement('span');
+            cursor.className = 'cursor';
+            let i = 0;
+            const interval = setInterval(() => {
+                if (i < text.length) {
+                    el.textContent += text[i++];
+                    el.appendChild(cursor);
+                } else {
+                    clearInterval(interval);
+                    cursor.remove();
+                    resolve();
+                }
+            }, speed);
+        });
+    }
+
+    async function runSimulation() {
+        if (running) return;
+        running = true;
+
+        const topic = document.getElementById('topicInput').value.trim() || 'diffusion models';
+        const domain = document.getElementById('domainSelect').value;
+        const iters = parseInt(document.getElementById('iterSelect').value);
+        const data = domainData[domain];
+
+        document.getElementById('runBtn').disabled = true;
+        document.getElementById('iterationList').innerHTML = '';
+
+        let baseScore = 40 + Math.floor(Math.random() * 15);
+        let score = baseScore;
+        let prevScore = score;
+
+        // Update status
+        document.getElementById('simStatusIcon').textContent = '⚡';
+        document.getElementById('simStatusLabel').textContent = `Running: "${topic}" (${data.label})`;
+        document.getElementById('simStatusRight').textContent = `0 / ${iters} iterations`;
+        document.getElementById('statIterations').textContent = '0';
+        document.getElementById('statScore').textContent = '—';
+        document.getElementById('statGain').textContent = '—';
+
+        // Reset nodes
+        for (let i = 0; i < 4; i++) setNodeState(i, '');
+
+        for (let iter = 0; iter < iters; iter++) {
+            const hyp = data.hypotheses[iter % data.hypotheses.length];
+            const fb = data.feedback[iter % data.feedback.length];
+            const scoreGain = 5 + Math.floor(Math.random() * 12) + Math.floor(iter * 1.5);
+            prevScore = score;
+            score = Math.min(99, score + scoreGain);
+
+            // Phase 1: Prompt
+            setNodeState(0, 'active');
+            await sleep(400);
+            addPhaseBlock(iter, `Iteration ${iter + 1}`, 'research',
+                `🔍 Searching literature for: "${topic}" in ${data.label}...`);
+            await sleep(600);
+            setNodeState(0, 'done');
+
+            // Phase 2: Research
+            setNodeState(1, 'active');
+            await sleep(500);
+            const resEl = addPhaseBlock(iter, 'AI Hypothesis Generated', 'research', '');
+            await typeText(resEl, hyp, 14);
+            await sleep(400);
+            setNodeState(1, 'done');
+
+            // Phase 3: Human review
+            setNodeState(2, 'active');
+            await sleep(400);
+            const fbEl = addPhaseBlock(iter, 'Human Feedback', 'feedback', '');
+            await typeText(fbEl, fb, 16);
+            await sleep(400);
+            setNodeState(2, 'done');
+
+            // Phase 4: Model trains
+            setNodeState(3, 'active');
+            await sleep(300);
+            const scoreEl = addPhaseBlock(iter, 'Model Update', 'refine', `Quality score: ${prevScore}% → ${score}%`);
+            addScoreBar(scoreEl.parentElement.parentElement, score);
+            await sleep(600);
+            setNodeState(3, 'done');
+
+            // Update stats
+            document.getElementById('statIterations').textContent = iter + 1;
+            document.getElementById('statScore').textContent = `${score}%`;
+            document.getElementById('statGain').textContent = `+${score - baseScore}%`;
+            document.getElementById('simStatusRight').textContent = `${iter + 1} / ${iters} iterations`;
+
+            // Loop back
+            if (iter < iters - 1) {
+                for (let i = 0; i < 4; i++) setNodeState(i, '');
+                await sleep(200);
+            }
+        }
+
+        // Done!
+        document.getElementById('simStatusIcon').textContent = '✅';
+        document.getElementById('simStatusLabel').textContent = `Loop complete — model improved by ${score - baseScore}%`;
+        document.getElementById('simStatusRight').textContent = `Final quality: ${score}%`;
+        document.getElementById('runBtn').disabled = false;
+        running = false;
+    }
+
+    function addPhaseBlock(iter, phase, type, text) {
+        const list = document.getElementById('iterationList');
+        const div = document.createElement('div');
+        div.className = 'iteration';
+
+        const badge = iter === 0 && type === 'research' ?
+            `<div class="iter-badge">ITER ${iter + 1}</div>` : '<div style="width:40px;flex-shrink:0"></div>';
+
+        div.innerHTML = `
+            ${badge}
+            <div class="iter-content">
+                <div class="iter-phase">${phase}</div>
+                <div class="iter-text phase-${type}">${text}</div>
+            </div>
+        `;
+
+        list.appendChild(div);
+
+        // Animate in
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => div.classList.add('visible'));
+        });
+
+        div.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        return div.querySelector('.iter-text');
+    }
+
+    function addScoreBar(container, score) {
+        const scoreBar = document.createElement('div');
+        scoreBar.className = 'score-bar';
+        scoreBar.innerHTML = `
+            <span class="score-label">Quality</span>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 0%"></div>
+            </div>
+            <span class="score-val">${score}%</span>
+        `;
+        container.appendChild(scoreBar);
+        setTimeout(() => {
+            scoreBar.querySelector('.progress-fill').style.width = `${score}%`;
+        }, 100);
+    }
+
+    function resetSim() {
+        if (running) return;
+        document.getElementById('iterationList').innerHTML = `
+            <div class="empty-state">
+                <div class="big-icon">🤖</div>
+                <strong>Set a topic and run the loop</strong>
+                <span>Watch the AI iteratively improve its research quality</span>
+            </div>
+        `;
+        document.getElementById('statIterations').textContent = '0';
+        document.getElementById('statScore').textContent = '—';
+        document.getElementById('statGain').textContent = '—';
+        document.getElementById('simStatusIcon').textContent = '🔮';
+        document.getElementById('simStatusLabel').textContent = 'AutoResearch Loop Simulator';
+        document.getElementById('simStatusRight').textContent = 'Ready to run';
+        for (let i = 0; i < 4; i++) setNodeState(i, '');
+    }
+</script>
+</body>
+</html>
